@@ -1,0 +1,10 @@
+TOOLS.md
+
+__pycache__/
+*.pyc
+*.tmp
+.ipynb_checkpoints/
+.venv/
+results/
+Programming01/clean.py
+Programming01/requirements.txt
