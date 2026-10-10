@@ -4,7 +4,8 @@ __pycache__/
 *.pyc
 *.tmp
 .ipynb_checkpoints/
+.ruff_cache/
 .venv/
 results/
-Programming01/clean.py
-Programming01/requirements.txt
+Programming01/Session*/clean.py
+Programming01/Session*/requirements.txt

@@ -2,7 +2,7 @@
 
 ```bash
 make figures     # regenerate the slide illustrations (matplotlib)
-make data        # regenerate the synthetic ward export the notebook works on
+make data        # regenerate the synthetic ward export, shared by the sessions
 make notebooks   # regenerate notebook.ipynb and notebook_solutions.ipynb
 make slides      # slides.md -> slides.pptx (pandoc, then a post-processing pass)
 ```
