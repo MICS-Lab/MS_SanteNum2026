@@ -4,6 +4,8 @@ Course materials for the *Digital Health* specialised master, 2026.
 
 ### Sessions
 
+- Session 0: Libraries, environments, and uv
+    - Slides ([md](Programming01/Session00/slides.md) / [pptx](Programming01/Session00/slides.pptx))
 - Session 1: The command line, and where Python fits (environments, pip/uv, ruff)
     - Slides ([md](Programming01/Session01/slides.md) / [pptx](Programming01/Session01/slides.pptx))
     - [Notebook](Programming01/Session01/notebook.ipynb)
