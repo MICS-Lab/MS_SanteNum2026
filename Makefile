@@ -2,8 +2,8 @@ SLIDE_SOURCES := $(wildcard */Session*/slides*.md)
 SLIDE_TARGETS := $(SLIDE_SOURCES:.md=.pptx)
 
 # Programming01/Session00: the libraries and environments primer
-C00_STEMS := library_value ecosystem versions conflict venv_anatomy pip_flow \
-             uv_tools uv_why
+C00_STEMS := levels why_python common_tasks library_value ecosystem versions \
+             conflict venv_anatomy pip_flow uv_tools uv_why
 C00_FIGURES := $(foreach f,$(C00_STEMS),Programming01/Session00/img/$(f).png)
 
 # Programming01/Session01: one figure per concept, from scripts/make_figures_c01.py
