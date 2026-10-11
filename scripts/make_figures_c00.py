@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Render the illustration figures used by the Programming01 Session00 slides.
 
-Session00 is the primer: what a library is, why versions collide, and what `uv`
-does about it. Every figure is synthetic and self contained, so `make figures`
+Session00 is the primer: why Python, what a library is, why versions collide, and
+what `uv` does about it. Every figure is synthetic and self contained, so `make figures`
 reproduces the same output anywhere.
 
 Usage: make_figures_c00.py [outdir]   (default: Programming01/Session00/img)
@@ -33,6 +33,152 @@ from slidefig import (
     save,
 )
 
+
+# ================================================= 0. low level vs high level
+def fig_levels(out: Path) -> None:
+    """A language sits somewhere between the processor and the problem."""
+    fig, axes = plt.subplots(1, 2, figsize=WIDE, gridspec_kw={"width_ratios": [1, 1]})
+
+    ax = axes[0]
+    blank(ax)
+    ax.text(0.34, 0.95, "high level (closer to human understanding)", ha="center",
+            fontsize=11, color=GREEN)
+    rungs = [
+        ("Python, R, MATLAB", 0.76, GREEN, "one line can mean a lot of work"),
+        ("C, C++, Rust", 0.56, BLUE, "you manage the memory yourself"),
+        ("assembly", 0.36, AMBER, "one processor instruction at a time"),
+        ("machine code", 0.16, GREY, "what the processor actually runs"),
+    ]
+    for name, y, colour, what in rungs:
+        box(ax, (0.34, y), 0.56, 0.14, name, ec=colour, fs=12)
+        ax.text(0.65, y, what, fontsize=10, color=GREY, va="center", ha="left")
+    ax.text(0.34, 0.03, "low level (closer to the machine)", ha="center",
+            fontsize=11, color=GREY)
+
+    ax = axes[1]
+    blank(ax)
+    ax.set_title("Addition on different levels", fontsize=13)
+    snippets = [
+        ("Python", "c = a + b", GREEN),
+        ("C", "int c = a + b;", BLUE),
+        ("assembly", "mov eax,[a]  add eax,[b]  mov [c],eax", AMBER),
+        ("machine code", "8b 45 fc 03 45 f8 89 45 f4", GREY),
+    ]
+    for i, (label, line, colour) in enumerate(snippets):
+        y = 0.80 - i * 0.22
+        ax.text(0.0, y, label, fontsize=10.5, color=colour, va="center", ha="left")
+        ax.text(0.24, y, line, fontsize=10.5, family=MONO, color=INK,
+                va="center", ha="left")
+        if i:
+            arrow(ax, (0.12, y + 0.16), (0.12, y + 0.05), color=FAINT, lw=2.2)
+    ax.text(0.0, 0.03, "Processor can only run machine code",
+            fontsize=10.5, color=INK, ha="left")
+
+    fig.tight_layout()
+    save(fig, out, "levels")
+
+
+# ==================================================== 0b. why Python, here
+def fig_why_python(out: Path) -> None:
+    """Popular, high level, and fast where the time is actually spent."""
+    fig, axes = plt.subplots(1, 3, figsize=WIDE)
+
+    ax = axes[0]
+    blank(ax)
+    ax.set_title("Popular", fontsize=13, color=BLUE)
+    ax.add_patch(FancyBboxPatch((0.02, 0.76), 0.96, 0.16,
+                                boxstyle="round,pad=0.01,rounding_size=0.03",
+                                facecolor="#fbfbfb", edgecolor=GREY, linewidth=1.4))
+    ax.text(0.07, 0.84, "KeyError: 'age'", fontsize=11, family=MONO, color=RED,
+            va="center", ha="left")
+    for i, hit in enumerate(["Most questions are already answered",
+                            "Documentation is up to date"]):
+        y = 0.62 - i * 0.13
+        ax.text(0.06, y, "\u2713", fontsize=12, color=GREEN, va="center")
+        ax.text(0.16, y, hit, fontsize=10.5, color=GREY, va="center", ha="left")
+
+    ax = axes[1]
+    blank(ax)
+    ax.set_title("High level", fontsize=13, color=PURPLE)
+    code = ["for patient in ward:", "    if patient.age > 75:",
+            "        elderly.append(patient)"]
+    ax.add_patch(FancyBboxPatch((0.02, 0.60), 0.96, 0.32,
+                                boxstyle="round,pad=0.01,rounding_size=0.03",
+                                facecolor="#fbfbfb", edgecolor=GREY, linewidth=1.4))
+    for i, line in enumerate(code):
+        ax.text(0.06, 0.84 - i * 0.10, line, fontsize=10.5, family=MONO, color=INK,
+                va="center", ha="left")
+    ax.text(0.5, 0.44, "No types to declare,\nNo memory to free",
+            ha="center", fontsize=10.5, color=GREY)
+    ax.text(0.5, 0.08, "quick to learn",
+            ha="center", fontsize=10.5, color=INK)
+
+    ax = axes[2]
+    blank(ax)
+    ax.set_title("Fast", fontsize=13, color=GREEN)
+    stack = [("your code (Python)", 0.86, PURPLE, 0.12),
+             ("numpy, pandas, torch", 0.69, BLUE, 0.12),
+             ("C, Fortran, Rust, CUDA", 0.52, GREEN, 0.12)]
+    for name, y, colour, h in stack:
+        box(ax, (0.5, y), 0.92, h, name, ec=colour, fs=10.5)
+    for y in (0.775, 0.605):
+        arrow(ax, (0.5, y + 0.025), (0.5, y - 0.025), color=GREY, lw=1.4)
+    ax.text(0.5, 0.33, "Few lines convert to compiled code\nand billion operations",
+            ha="center", fontsize=10.5, color=GREY)
+
+    fig.tight_layout()
+    save(fig, out, "why_python")
+
+
+# ============================================= 0c. the jobs everybody has
+def _cells(ax, x0, y0, cols, rows, w=0.085, h=0.055, ec=GREY, header=BLUE):
+    for r in range(rows):
+        for c in range(cols):
+            ax.add_patch(FancyBboxPatch((x0 + c * w, y0 - r * h), w * 0.92, h * 0.86,
+                                        boxstyle="square,pad=0",
+                                        facecolor=("#eef3fa" if r == 0 else "white"),
+                                        edgecolor=(header if r == 0 else ec),
+                                        linewidth=1.0))
+
+
+def fig_common_tasks(out: Path) -> None:
+    """Three jobs every single project needs, and nobody should write twice."""
+    fig, axes = plt.subplots(1, 3, figsize=WIDE)
+
+    ax = axes[0]
+    blank(ax)
+    ax.set_title("Read a table", fontsize=13)
+    _cells(ax, 0.28, 0.86, 4, 4, w=0.11, h=0.075)
+    ax.text(0.5, 0.36, 'pd.read_csv("patients.csv")', ha="center", fontsize=11,
+            family=MONO, color=BLUE)
+#     ax.text(0.5, 0.17, "separators, quoting, encodings,\nmissing values, dates",
+#             ha="center", fontsize=10, color=GREY)
+
+    ax = axes[1]
+    blank(ax)
+    ax.set_title("Draw a figure", fontsize=13)
+    xs = [0.16 + i * 0.0733 for i in range(10)]
+    ys = [0.64, 0.74, 0.70, 0.83, 0.78, 0.87, 0.72, 0.80, 0.68, 0.76]
+    ax.plot(xs, ys, color=RED, lw=1.8, marker="o", ms=3)
+    ax.plot([0.14, 0.14, 0.90], [0.90, 0.58, 0.58], color=INK, lw=1.2)
+    ax.text(0.5, 0.36, "plt.plot(t, ecg)", ha="center", fontsize=11,
+            family=MONO, color=BLUE)
+#     ax.text(0.5, 0.17, "axes, ticks, labels, colours,\nand a file you can print",
+#             ha="center", fontsize=10, color=GREY)
+
+    ax = axes[2]
+    blank(ax)
+    ax.set_title("Multiply matrices", fontsize=13)
+    _cells(ax, 0.17, 0.86, 3, 3, w=0.095, h=0.075, header=GREY)
+    ax.text(0.50, 0.75, "x", fontsize=14, color=INK, ha="center", va="center")
+    _cells(ax, 0.545, 0.86, 3, 3, w=0.095, h=0.075, header=GREY)
+    ax.text(0.5, 0.36, "A @ B", ha="center", fontsize=11, family=MONO, color=BLUE)
+#     ax.text(0.5, 0.17, "blocking, threads, vector units,\nfifty years of Fortran",
+#             ha="center", fontsize=10, color=GREY)
+
+    fig.text(0.5, 0.025, "Most project need these.", ha="center", fontsize=11.5, color=INK)
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    save(fig, out, "common_tasks")
 
 # ======================================================= 1. what you do not write
 def fig_library_value(out: Path) -> None:
@@ -336,6 +482,9 @@ def fig_uv_why(out: Path) -> None:
 
 
 FIGURES = (
+    fig_levels,
+    fig_why_python,
+    fig_common_tasks,
     fig_library_value,
     fig_ecosystem,
     fig_versions,
