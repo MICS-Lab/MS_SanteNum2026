@@ -7,13 +7,54 @@ author: "Paul Dubois"
 date: "Week 1, Primer"
 ---
 
-<!-- add explanation on low vs high level langages -->
+# 0. Why Python?
 
-<!-- say that in this course, we will use python because: it is popular, most questions are already answered; it is high level => easy to learn; it is efficient, bc most libraries are written in low level languages (hence very efficient) -->
+## Low level, high level
+
+![](img/levels.png)
+
+::: notes
+A language is a level of description. Machine code is what the processor runs: numbers.
+Assembly is the same thing with names, one instruction per line. C, C++ and Rust let you
+write expressions, but you still decide where every byte lives. Python lets you write the
+thing you meant, and decides the rest for you.
+Low level buys control and speed, and costs lines of code and bugs (every buffer and every
+pointer is yours to get right). High level buys time, and costs some control.
+Nothing here is "better": they sit at different points of the same trade.
+:::
+
+## Python
+
+![](img/why_python.png)
+
+::: notes
+Three reasons, in order of how much they matter to you this year.
+1. Popular: it is the most used language in data and in health research. Practically every
+   question you will have has been asked and answered already, and every library you need
+   has a Python interface.
+2. High level: little syntax to learn, so the time goes into the data and not into the
+   language. You will be productive in weeks, not years.
+3. Still fast: the heavy loops are not run by Python. numpy, pandas and torch are thin
+   Python surfaces over compiled C, Fortran, Rust and CUDA. You write the 20 lines that
+   describe the computation, and compiled code performs the billion operations.
+The honest limit: pure Python loops over millions of rows are slow. The whole skill is
+letting the libraries do the loop.
+:::
 
 # 1. Libraries
 
-<!-- slide on taks that are done by everyone: read CSV, plot, matrix multiplication -->
+## Shared tasks in many projects
+
+![](img/common_tasks.png)
+
+::: notes
+Read a table, draw a figure, multiply two matrices: every project in the room needs these,
+and none of them is as simple as it looks. Reading a CSV means separators, quoting,
+encodings, missing values and dates. Drawing a figure means axes, ticks, labels and an
+export. Multiplying matrices means cache blocking, threads and vector instructions.
+Because everybody needs them, they are written once, by people who specialise in exactly
+that, and tested by millions of users. That is what a library is.
+:::
 
 ## Reusing code
 
