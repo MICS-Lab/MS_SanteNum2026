@@ -8,4 +8,5 @@ __pycache__/
 .venv/
 results/
 Programming01/Session*/clean.py
+Programming01/Session*/rows.py
 Programming01/Session*/requirements.txt
