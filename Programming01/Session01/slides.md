@@ -298,3 +298,163 @@ list, `[2]` gives a dict, `["diagnoses"]` gives a list, `[0]` gives a str.
 When an access fails, print the `type` of the intermediate value: it is almost always
 "I thought this was a dict but it is a list".
 :::
+
+# 5. NumPy arrays
+
+## Lists are slow for numbers
+
+![](img/list_vs_array.png)
+
+::: notes
+A list of a million heart rates is a million separate Python objects, each with its own
+type, scattered in memory; the list only holds arrows to them. Every `+` in a loop asks
+Python "what type is this?" again.
+A NumPy array is one contiguous block of numbers, all of the same type (the dtype). The
+loop is then run by compiled C code, which never asks: that is the "Fast" panel of
+Session 0, made concrete.
+The price: an array holds one type only, and has a fixed size. For numbers, that is the
+price you always want to pay. Measure it yourself in the notebook with `%timeit`.
+:::
+
+## The `ndarray`: shape and dtype
+
+![](img/ndarray.png)
+
+::: notes
+Two attributes describe every array, and they are the first thing to print when something
+goes wrong. `.shape` is a tuple, the size along each axis; `.ndim` is its length. `.dtype`
+is the single type of every cell.
+Axis 0 is the rows (going down), axis 1 the columns (going across). A table of 200
+patients by 3 measurements has shape `(200, 3)`.
+One float in the list and every cell becomes a float: the array picks a dtype that fits
+every value. A string in the list would make an array of strings, and arithmetic stops
+working, a classic symptom of a dirty CSV column.
+:::
+
+## Creating arrays
+
+```python
+import numpy as np
+
+np.array([72, 85, 64])
+np.arange(12).reshape(3, 4)
+np.linspace(0, 1, 5)     # 5 points
+np.zeros((3, 4))
+np.eye(4)                # identity
+
+rng = np.random.default_rng(0)
+rng.normal(1.70, 0.09, 200)
+```
+
+::: notes
+`np` is the universal alias; every tutorial, answer and library uses it.
+`arange` works like `range` (end excluded); `linspace` takes a number of points and
+includes the end. `reshape` rearranges without copying, as long as the sizes match:
+12 values cannot become 5 x 2.
+Random numbers: always use a seeded generator, so the same script gives the same result
+tomorrow and on your colleague's machine. That is reproducibility at the smallest scale.
+:::
+
+## Indexing in two dimensions
+
+![](img/array_index.png)
+
+::: notes
+Same grammar as lists and strings, with one index per axis, separated by a comma:
+`y[row, col]`. A `:` alone means "everything along this axis".
+`y[1]` is a whole row; `y[:, 2]` a whole column (the thing lists of lists cannot do).
+Slices of an array are views, not copies: writing into `y[:2, :2]` changes `y`. This is
+the aliasing of the previous section again; use `.copy()` when you want independence.
+Assignment works on whole slices: `t[:, 1] = 0` sets a column at once.
+:::
+
+## Operations are element-wise
+
+```python
+x = np.arange(5)   # [0 1 2 3 4]
+
+x ** 2             # [0 1 4 9 16]
+x + 10             # [10 11 12 13 14]
+np.sqrt(x)         # no loop
+
+t * t              # element-wise
+t @ t.T            # matrix product
+```
+
+::: notes
+Every arithmetic operator and every `np.` maths function applies to each element: this
+is vectorization, and it is the whole style of numpy, pandas and torch. If you write a
+`for` loop over the elements of an array, there is almost always a one-liner instead.
+Careful with `*`: on arrays it multiplies element by element. The matrix product is `@`.
+Compare with lists: `[1, 2] * 2` is `[1, 2, 1, 2]`, and `[1, 2] + [3]` concatenates.
+Same symbol, different type, different meaning.
+:::
+
+## Broadcasting
+
+![](img/broadcasting.png)
+
+::: notes
+When the shapes differ, numpy stretches the smaller array along the missing axis, as if
+it were repeated (it is not actually copied). `x + 10` was already broadcasting: a scalar
+stretched to every cell.
+The rule: compare shapes from the right; each pair of sizes must be equal, or one of them
+must be 1. `(3, 4)` and `(4,)` match. `(3, 4)` and `(3,)` do not: to add one value per
+row, make it a column, shape `(3, 1)`, with `.reshape(3, 1)` or `v[:, None]`.
+Typical use: subtracting the mean of each column from a table, in one line.
+:::
+
+## Aggregating along an axis
+
+![](img/axes.png)
+
+::: notes
+`sum`, `mean`, `std`, `min`, `max`, `argmax` all take an `axis`. Without it they reduce
+the whole array to one number.
+The sentence that ends the confusion: the axis you name is the one that disappears.
+`axis=0` collapses the rows, so you get one value per column: on a patients x measurements
+table, the mean of each measurement. `axis=1` gives one value per patient.
+Check the shape of the result every time: `(4,)` versus `(3,)` tells you which one you did.
+Standardising a table combines the two slides: `(m - m.mean(axis=0)) / m.std(axis=0)`.
+:::
+
+## Boolean masks
+
+![](img/masks.png)
+
+::: notes
+A comparison on an array gives an array of booleans of the same shape: the mask. Indexing
+with a mask keeps the positions where it is True; the result is always 1D.
+This is how you filter without a loop, and exactly how pandas filters rows later
+(`df[df["bmi"] >= 30]`).
+Combine conditions with `&` and `|`, not `and` / `or`, and parenthesise each condition:
+`(bmi >= 18.5) & (bmi < 25)`. Forgetting the parentheses is the error of the week.
+`np.where(cond, a, b)` picks from `a` where True and from `b` elsewhere, e.g. to clip
+negative values to 0.
+:::
+
+## A cohort in a few lines
+
+```python
+bmi = weight / height ** 2   # 200 at once
+bmi.mean(), bmi.min(), bmi.max()
+
+(bmi >= 30).mean()     # 0.215
+
+cat = np.digitize(bmi, [18.5, 25, 30])
+np.bincount(cat)       # [23 72 62 43]
+```
+
+::: notes
+The mini use case of the notebook: 200 simulated patients (seed 42), heights and weights
+drawn from normal distributions.
+One line computes 200 BMIs, with broadcasting between two arrays of the same shape. A mean
+of a mask is a fraction (21.5 % obese here). `digitize` turns a value into a category from
+the cut points, `bincount` counts each category.
+Compare with the list of dicts from section 4: same questions, no loop, and it would take
+the same time on 200 000 patients. That is why every data library is built on arrays.
+:::
+
+## BMI of the cohort
+
+![](img/bmi_hist.png)
