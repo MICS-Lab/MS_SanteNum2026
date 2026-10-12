@@ -558,6 +558,112 @@ def fig_ndarray(out: Path) -> None:
     save(fig, out, "ndarray")
 
 
+# ===================================================== 9c. inside a float
+FLOATS = (  # name, exponent bits, mantissa bits, significant digits, largest value
+    ("float64", 11, 52, "~16 digits", "1.8e308"),
+    ("float32", 8, 23, "~7 digits", "3.4e38"),
+    ("float16", 5, 10, "~3 digits", "65 504"),
+    ("float8 (e4m3)", 4, 3, "~1 digit", "448"),
+)
+
+
+def fig_float_bits(out: Path) -> None:
+    """Sign, exponent, mantissa: fewer bits, fewer digits, smaller range."""
+    fig, ax = plt.subplots(figsize=WIDE)
+    blank(ax)
+
+    x0, unit = 0.17, 0.0085  # one bit, in axes units: float64 spans 0.54
+    ax.text(x0 + 64 * unit + 0.03, 0.93, "precision", fontsize=10.5, color=GREY,
+            ha="left")
+    ax.text(x0 + 64 * unit + 0.17, 0.93, "largest", fontsize=10.5, color=GREY,
+            ha="left")
+    for i, (name, nexp, nmant, digits, top) in enumerate(FLOATS):
+        y = 0.76 - i * 0.19
+        ax.text(x0 - 0.02, y, name, ha="right", va="center", fontsize=12,
+                family=MONO, color=INK)
+        x = x0
+        for n, colour, fill in ((1, RED, "#fbeaea"), (nexp, BLUE, "#eef3fa"),
+                                (nmant, GREEN, "#eafaec")):
+            ax.add_patch(FancyBboxPatch((x, y - 0.055), n * unit, 0.11,
+                                        boxstyle="square,pad=0", facecolor=fill,
+                                        edgecolor=colour, linewidth=1.2))
+            if n * unit > 0.02:
+                ax.text(x + n * unit / 2, y, str(n), ha="center", va="center",
+                        fontsize=10, color=colour)
+            x += n * unit
+        ax.text(x0 + 64 * unit + 0.03, y, digits, va="center", fontsize=11,
+                color=INK, ha="left")
+        ax.text(x0 + 64 * unit + 0.17, y, top, va="center", fontsize=11,
+                family=MONO, color=INK, ha="left")
+
+    for i, (label, colour) in enumerate((("sign", RED), ("exponent: the range", BLUE),
+                                         ("mantissa: the digits", GREEN))):
+        x = (0.17, 0.29, 0.54)[i]
+        ax.add_patch(FancyBboxPatch((x, 0.035), 0.02, 0.04, boxstyle="square,pad=0",
+                                    facecolor="white", edgecolor=colour, lw=1.4))
+        ax.text(x + 0.03, 0.055, label, fontsize=10.5, color=colour, va="center")
+    save(fig, out, "float_bits")
+
+
+# ===================================================== 9d. what each float stores
+def fig_float_precision(out: Path) -> None:
+    """The same measurements, stored in four float types (values computed by numpy)."""
+    import ml_dtypes
+    import numpy as np
+
+    types = (("float64", np.float64), ("float32", np.float32),
+             ("float16", np.float16), ("float8", ml_dtypes.float8_e4m3fn))
+    values = (("38.4", "temperature (°C)"), ("72.3", "weight (kg)"),
+              ("1000.4", "platelets (10⁹/L)"), ("3.141592653589793", "pi"))
+
+    fig, ax = plt.subplots(figsize=WIDE)
+    blank(ax)
+    cols = (0.20, 0.42, 0.62, 0.80)
+    for x, (name, _) in zip(cols, types):
+        ax.text(x, 0.92, name, ha="left", fontsize=12, family=MONO, color=INK)
+    for i, (text, what) in enumerate(values):
+        y = 0.74 - i * 0.17
+        ax.text(0.0, y + 0.025, text if len(text) < 8 else "3.14159...", fontsize=12,
+                family=MONO, color=INK, ha="left", va="center")
+        ax.text(0.0, y - 0.045, what, fontsize=10, color=GREY, ha="left",
+                va="center")
+        exact = float(text)
+        for x, (name, t) in zip(cols, types):
+            stored = float(np.array(exact).astype(t))
+            if np.isnan(stored):
+                shown, colour = "nan (too big)", RED
+            else:
+                shown = f"{stored:.10g}" if name != "float64" else f"{stored:.15g}"
+                err = abs(stored - exact) / exact
+                colour = GREEN if err < 1e-6 else (AMBER if err < 1e-2 else RED)
+            ax.text(x, y, shown, fontsize=11.5, family=MONO, color=colour,
+                    ha="left", va="center")
+    ax.text(0.0, 0.03, "error:  ", fontsize=10.5, color=GREY, ha="left")
+    for i, (label, colour) in enumerate((("< 1 in a million", GREEN),
+                                         ("< 1 %", AMBER), ("clinically wrong", RED))):
+        ax.text(0.08 + i * 0.18, 0.03, label, fontsize=10.5, color=colour, ha="left")
+    save(fig, out, "float_precision")
+
+
+# ===================================================== 9e. memory
+def fig_dtype_memory(out: Path) -> None:
+    """One CT volume, 512 x 512 x 300 voxels, in each float type."""
+    fig, ax = plt.subplots(figsize=WIDE)
+    voxels = 512 * 512 * 300
+    names = ["float64", "float32", "float16", "float8"]
+    mb = [voxels * b / 1e6 for b in (8, 4, 2, 1)]
+    ax.barh(range(4), mb, color=[GREY, BLUE, PURPLE, GREEN], height=0.55)
+    ax.set_yticks(range(4))
+    ax.set_yticklabels(names, fontsize=11, family=MONO)
+    ax.invert_yaxis()
+    ax.set_xlim(0, 760)
+    ax.set_xlabel("megabytes", fontsize=10)
+    for i, v in enumerate(mb):
+        ax.text(v + 8, i, f"{v:.0f} MB", va="center", fontsize=11, color=INK)
+    ax.set_title("One CT scan: 512 x 512 x 300 voxels", fontsize=13)
+    save(fig, out, "dtype_memory")
+
+
 # ===================================================== 10. 2d indexing
 def _grid(ax, x0, y0, rows, cols, hot, w=0.10, h=0.13, colour=BLUE, fill="#eef3fa"):
     """A rows x cols block of arange values, highlighting the (r, c) pairs in hot."""
@@ -729,6 +835,9 @@ FIGURES = (
     fig_nested,
     fig_list_vs_array,
     fig_ndarray,
+    fig_float_bits,
+    fig_float_precision,
+    fig_dtype_memory,
     fig_array_index,
     fig_broadcasting,
     fig_axes,
