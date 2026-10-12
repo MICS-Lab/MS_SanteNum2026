@@ -8,7 +8,9 @@ C00_FIGURES := $(foreach f,$(C00_STEMS),Programming01/Session00/img/$(f).png)
 
 # Programming01/Session01: Python types, from scripts/make_figures_c01.py
 C01_STEMS := names type_map numbers truthy string_index conversions containers \
-             aliasing dict_record sets nested
+             aliasing dict_record sets nested \
+             list_vs_array ndarray float_bits float_precision \
+             dtype_memory array_index broadcasting axes masks bmi_hist
 C01_FIGURES := $(foreach f,$(C01_STEMS),Programming01/Session01/img/$(f).png)
 
 # Programming01/Session02: one figure per concept, from scripts/make_figures_c02.py
