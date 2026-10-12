@@ -331,6 +331,102 @@ every value. A string in the list would make an array of strings, and arithmetic
 working, a classic symptom of a dirty CSV column.
 :::
 
+## NumPy data types
+
+| dtype | bytes | holds | typical use |
+|---|---|---|---|
+| `bool` | 1 | `True` / `False` | masks |
+| `uint8` | 1 | 0 to 255 | image pixels |
+| `int16` | 2 | -32 768 to 32 767 | CT scans (Hounsfield units) |
+| `int64` | 8 | about ±9.2e18 | counts, ids (the default int) |
+| `float16` | 2 | ~3 digits, up to 65 504 | deep learning |
+| `float32` | 4 | ~7 digits | images, deep learning, GPUs |
+| `float64` | 8 | ~16 digits | statistics (the default float) |
+
+::: notes
+Python has one `int` and one `float`. NumPy has a family of each, with a fixed size in
+bytes, because every cell of an array must have the same size for the block of memory to
+work.
+The number in the name is the number of bits: `int16` is 16 bits, 2 bytes. `u` means
+unsigned (no negative values).
+You rarely pick: `np.array` chooses `int64` or `float64`. But the files you read pick for
+you: a DICOM CT is usually `int16`, a PNG `uint8`, a NIfTI often `float32`, and a deep
+learning model `float32` or less. Always print `.dtype` after loading data.
+:::
+
+## Inside a float
+
+![](img/float_bits.png)
+
+::: notes
+A float is scientific notation in binary: a sign, an exponent (where the point goes: the
+range) and a mantissa (the significant digits: the precision).
+Halving the size costs both. `float32` keeps 7 digits, plenty for any measurement made in a
+hospital. `float16` keeps 3 digits and cannot go above 65 504. `float8` keeps about one
+digit; it exists for deep learning on recent GPUs (two variants: e4m3 for precision,
+e5m2 for range).
+NumPy itself stops at `float16`: `float8` comes from the `ml_dtypes` package or from
+`torch.float8_e4m3fn`.
+:::
+
+## The same values, four precisions
+
+![](img/float_precision.png)
+
+::: notes
+Every number on this slide was computed by numpy, not typed by hand.
+`float64` and `float32` agree to well beyond what a thermometer measures. `float16` starts
+to show: 38.40625 instead of 38.4, harmless for a temperature, but the error grows with the
+value (1000.4 becomes 1000.5: the gap between two float16 neighbours near 1000 is 0.5).
+`float8` turns a 38.4 °C fever into 40 °C, and a platelet count of 1000 into "not a
+number". It is a format for neural network weights, which tolerate noise, not for
+clinical data.
+:::
+
+## Smaller is lighter and faster
+
+![](img/dtype_memory.png)
+
+::: notes
+Memory is bytes per value times number of values. One CT volume is 79 million voxels:
+629 MB in `float64`, 315 MB in `float32`. A batch of scans for training does not fit on a
+GPU in `float64`.
+Fewer bytes also means faster: more values per memory transfer, and GPUs have dedicated
+hardware for 16 and 8 bit arithmetic. This is why deep learning trains in `float32` or
+"mixed precision" (`float16`/`bfloat16` for the bulk, `float32` where it matters), and runs
+large models in 8 bits or less.
+The rule for this course: `float64` for statistics and tables, `float32` for images and
+neural networks, smaller only when a library does it for you.
+:::
+
+## Choosing and converting
+
+```python
+x = np.arange(4, dtype=np.float32)
+x.dtype, x.nbytes        # float32, 16
+x.astype(np.float16)     # convert: a copy
+
+np.array([250], dtype=np.uint8) + 10
+                         # [4], not 260
+np.float16(70000)        # inf: overflow
+
+h = np.full(10000, 0.1, dtype=np.float16)
+h.cumsum()[-1]           # 256.0, not 1000
+```
+
+::: notes
+`dtype=` at creation, `.astype()` to convert (it returns a new array), `.nbytes` for the
+memory.
+Three silent failures, none of which raises an error:
+(1) integers wrap around: 250 + 10 in `uint8` is 4. Typical when adjusting the brightness
+  of an image; convert to a larger type first.
+(2) `float16` overflows to `inf` above 65 504.
+(3) adding many small numbers in low precision stalls: at 256 the next 0.1 is below half
+  the gap between float16 neighbours (0.25), so the sum stops growing. Accumulate in
+  `float32` or `float64` (numpy's `.sum()` already protects you better than a running
+  total, but not completely).
+:::
+
 ## Creating arrays
 
 ```python
