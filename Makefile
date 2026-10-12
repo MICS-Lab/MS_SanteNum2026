@@ -6,23 +6,34 @@ C00_STEMS := levels why_python common_tasks library_value ecosystem versions \
              conflict venv_anatomy pip_flow uv_tools uv_why
 C00_FIGURES := $(foreach f,$(C00_STEMS),Programming01/Session00/img/$(f).png)
 
-# Programming01/Session01: one figure per concept, from scripts/make_figures_c01.py
-C01_STEMS := gui_vs_cli terminal_shell anatomy filesystem pipeline reproducible \
-             python_vs_bash interop environments toolchain
+# Programming01/Session01: Python types, from scripts/make_figures_c01.py
+C01_STEMS := names type_map numbers truthy string_index conversions containers \
+             aliasing dict_record sets nested
 C01_FIGURES := $(foreach f,$(C01_STEMS),Programming01/Session01/img/$(f).png)
+
+# Programming01/Session02: one figure per concept, from scripts/make_figures_c02.py
+C02_STEMS := gui_vs_cli terminal_shell anatomy filesystem pipeline reproducible \
+             python_vs_bash interop environments toolchain
+C02_FIGURES := $(foreach f,$(C02_STEMS),Programming01/Session02/img/$(f).png)
+
+# Programming01/Session02/img/datacenter.jpg is a public domain photograph, not a
+# generated figure: it is committed, and img/CREDITS.md records where it comes from
 
 # the synthetic ward export, one level up because every session shares it
 C01_DATA := Programming01/data/patients.csv
 
-.PHONY: slides figures data notebooks clean-slides clean-figures
+.PHONY: slides figures data clean-slides clean-figures
 slides: $(SLIDE_TARGETS)
 
-figures: $(C00_FIGURES) $(C01_FIGURES)
+figures: $(C00_FIGURES) $(C01_FIGURES) $(C02_FIGURES)
 
 data: $(C01_DATA)
 
 $(C00_FIGURES): scripts/make_figures_c00.py scripts/slidefig.py
 	python3 scripts/make_figures_c00.py Programming01/Session00/img
+
+$(C02_FIGURES): scripts/make_figures_c02.py scripts/slidefig.py
+	python3 scripts/make_figures_c02.py Programming01/Session02/img
 
 $(C01_FIGURES): scripts/make_figures_c01.py scripts/slidefig.py
 	python3 scripts/make_figures_c01.py Programming01/Session01/img
@@ -32,6 +43,7 @@ $(C01_DATA): scripts/make_data_c01.py
 
 Programming01/Session00/slides.pptx: $(C00_FIGURES)
 Programming01/Session01/slides.pptx: $(C01_FIGURES)
+Programming01/Session02/slides.pptx: $(C02_FIGURES)
 
 %.pptx: %.md scripts/fit_pptx.py
 	pandoc $< -o $@ --slide-level=2 --resource-path=$(dir $<)
@@ -41,7 +53,4 @@ clean-slides:
 	rm -f $(SLIDE_TARGETS)
 
 clean-figures:
-	rm -f $(C00_FIGURES) $(C01_FIGURES)
-
-notebooks:
-	python3 scripts/make_notebook_c01.py Programming01/Session01
+	rm -f $(C00_FIGURES) $(C01_FIGURES) $(C02_FIGURES)
