@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Render the illustration figures used by the Programming01 Session01 slides.
+"""Render the illustration figures used by the Programming01 Session02 slides.
 
 Same contract as the NYU Paris decks: every figure is synthetic, seeded and
 self-contained, so `make figures` reproduces the same output anywhere without
-touching `data/`. Figures land in `Programming01/Session01/img/`.
+touching `data/`. Figures land in `Programming01/Session02/img/`.
 
-Usage: make_figures_c01.py [outdir]   (default: Programming01/Session01/img)
+Usage: make_figures_c02.py [outdir]   (default: Programming01/Session02/img)
 """
 
 from __future__ import annotations
@@ -413,7 +413,7 @@ FIGURES = (
 
 
 def main() -> None:
-    out = Path(sys.argv[1] if len(sys.argv) > 1 else "Programming01/Session01/img")
+    out = Path(sys.argv[1] if len(sys.argv) > 1 else "Programming01/Session02/img")
     out.mkdir(parents=True, exist_ok=True)
     for fn in FIGURES:
         fn(out)
