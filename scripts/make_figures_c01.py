@@ -2,8 +2,8 @@
 """Render the illustration figures used by the Programming01 Session01 slides.
 
 Session01 is Python types: what a variable is, the single values (numbers, booleans,
-strings, None), the four containers (list, tuple, dict, set), and how they nest into
-a patient record. Every figure is synthetic and self contained, so `make figures`
+strings, None), the four containers (list, tuple, dict, set), how they nest into
+a patient record, and the numpy array that replaces lists for numbers. Every figure is synthetic and self contained, so `make figures`
 reproduces the same output anywhere.
 
 Usage: make_figures_c01.py [outdir]   (default: Programming01/Session01/img)
@@ -465,6 +465,256 @@ def fig_nested(out: Path) -> None:
     save(fig, out, "nested")
 
 
+# ===================================================== 9. list vs array
+def fig_list_vs_array(out: Path) -> None:
+    """A list holds arrows to scattered objects; an array is one block of numbers."""
+    fig, axes = plt.subplots(1, 2, figsize=WIDE, gridspec_kw={"width_ratios": [1.3, 1]})
+
+    ax = axes[0]
+    blank(ax)
+    ax.text(0.0, 0.95, "list", fontsize=13, family=MONO, color=BLUE, ha="left",
+            va="center")
+    ax.text(0.12, 0.95, "arrows to separate objects, any type", fontsize=10.5,
+            color=GREY, ha="left", va="center")
+    for i in range(4):
+        _cell(ax, 0.02 + i * 0.09, 0.56, 0.09, 0.12, "\u2022", ec=BLUE)
+    spots = [(0.12, 0.82, "72"), (0.34, 0.78, "85"), (0.56, 0.83, "64"),
+             (0.78, 0.77, '"x"')]
+    for i, (x, y, v) in enumerate(spots):
+        box(ax, (x, y), 0.10, 0.08, v, ec=(AMBER if v == '"x"' else GREY), fs=10.5,
+            mono=True)
+        arrow(ax, (0.065 + i * 0.09, 0.62), (x, y - 0.05), color=GREY, lw=1.2)
+
+    ax.text(0.0, 0.40, "np.ndarray", fontsize=13, family=MONO, color=GREEN, ha="left")
+    ax.text(0.25, 0.40, "one block of memory, one dtype", fontsize=10.5, color=GREY,
+            ha="left")
+    for i, v in enumerate(("72", "85", "64", "90", "78", "101")):
+        _cell(ax, 0.02 + i * 0.09, 0.17, 0.09, 0.12, v, ec=GREEN, fc="#eafaec")
+    ax.text(0.58, 0.23, "int64", fontsize=11, family=MONO, color=GREEN, ha="left",
+            va="center")
+    ax.text(0.0, 0.03, "compiled code walks the block without asking Python",
+            fontsize=10.5, color=INK, ha="left")
+
+    ax = axes[1]
+    ax.set_title("Sum of squares, 1 000 000 integers", fontsize=12)
+    labels = ["Python loop", "NumPy"]
+    ms = [36.0, 0.63]
+    ax.barh(range(2), ms, color=[GREY, GREEN], height=0.5)
+    ax.set_yticks(range(2))
+    ax.set_yticklabels(labels, fontsize=11)
+    ax.invert_yaxis()
+    ax.set_xlabel("milliseconds (measured on a laptop)", fontsize=10)
+    ax.set_xlim(0, 45)
+    for i, v in enumerate(ms):
+        ax.text(v + 0.8, i, f"{v:g} ms", va="center", fontsize=11, color=INK)
+    ax.text(22, 1.0, "about 60x faster", va="center", fontsize=11.5, color=GREEN)
+
+    fig.tight_layout()
+    save(fig, out, "list_vs_array")
+
+
+# ===================================================== 9b. shape and dtype
+def fig_ndarray(out: Path) -> None:
+    """Shape is the size along each axis; dtype is the one type of every cell."""
+    fig, axes = plt.subplots(1, 3, figsize=WIDE, gridspec_kw={"width_ratios": [1, 1.1, 1]})
+
+    ax = axes[0]
+    blank(ax)
+    ax.set_title("np.array([1, 2, 3, 4])", fontsize=11, family=MONO)
+    for i in range(4):
+        _cell(ax, 0.10 + i * 0.2, 0.55, 0.2, 0.14, str(i + 1), ec=BLUE)
+    arrow(ax, (0.10, 0.45), (0.90, 0.45), color=BLUE)
+    ax.text(0.5, 0.39, "axis 0", ha="center", fontsize=10, color=BLUE, va="top")
+    ax.text(0.5, 0.18, "shape (4,)   ndim 1\ndtype int64", ha="center", fontsize=11,
+            family=MONO, color=INK, linespacing=1.6)
+
+    ax = axes[1]
+    blank(ax)
+    ax.set_title("np.array([[1, 2], [3, 4]])", fontsize=11, family=MONO)
+    for r in range(2):
+        for c in range(2):
+            _cell(ax, 0.30 + c * 0.2, 0.66 - r * 0.14, 0.2, 0.14, str(2 * r + c + 1),
+                  ec=PURPLE)
+    arrow(ax, (0.24, 0.80), (0.24, 0.52), color=PURPLE)
+    ax.text(0.22, 0.66, "axis 0\nrows", ha="right", va="center", fontsize=10,
+            color=PURPLE)
+    arrow(ax, (0.30, 0.86), (0.70, 0.86), color=AMBER)
+    ax.text(0.72, 0.86, "axis 1, columns", ha="left", va="center", fontsize=10,
+            color=AMBER)
+    ax.text(0.5, 0.18, "shape (2, 2)   ndim 2\ndtype int64", ha="center",
+            fontsize=11, family=MONO, color=INK, linespacing=1.6)
+
+    ax = axes[2]
+    blank(ax)
+    ax.set_title("np.array([1.0, 2, 3, 4])", fontsize=11, family=MONO)
+    for i, v in enumerate(("1.", "2.", "3.", "4.")):
+        _cell(ax, 0.10 + i * 0.2, 0.55, 0.2, 0.14, v, ec=RED if i else GREY)
+    ax.text(0.5, 0.40, "one float: every cell\nbecomes a float", ha="center",
+            fontsize=10.5, color=RED, va="top", linespacing=1.5)
+    ax.text(0.5, 0.18, "shape (4,)   ndim 1\ndtype float64", ha="center",
+            fontsize=11, family=MONO, color=INK, linespacing=1.6)
+
+    fig.tight_layout()
+    save(fig, out, "ndarray")
+
+
+# ===================================================== 10. 2d indexing
+def _grid(ax, x0, y0, rows, cols, hot, w=0.10, h=0.13, colour=BLUE, fill="#eef3fa"):
+    """A rows x cols block of arange values, highlighting the (r, c) pairs in hot."""
+    for r in range(rows):
+        for c in range(cols):
+            on = (r, c) in hot
+            _cell(ax, x0 + c * w, y0 - r * h, w, h, str(r * cols + c),
+                  ec=(colour if on else GREY), fc=(fill if on else "white"), fs=10.5)
+
+
+def fig_array_index(out: Path) -> None:
+    """y[row, col]: one index per axis, and a slice can stand for either."""
+    fig, axes = plt.subplots(1, 4, figsize=WIDE)
+    cases = [
+        ("y[1, 2]", {(1, 2)}, BLUE, "#eef3fa", "one cell: 6"),
+        ("y[1]", {(1, c) for c in range(4)}, PURPLE, "#f3effa", "row 1, shape (4,)"),
+        ("y[:, 2]", {(r, 2) for r in range(3)}, GREEN, "#eafaec", "column 2, shape (3,)"),
+        ("y[:2, :2]", {(r, c) for r in range(2) for c in range(2)}, AMBER, "#fdf6e9",
+         "top-left block, (2, 2)"),
+    ]
+    for ax, (expr, hot, colour, fill, what) in zip(axes, cases):
+        blank(ax)
+        ax.set_title(expr, fontsize=13, family=MONO, color=colour)
+        _grid(ax, 0.06, 0.66, 3, 4, hot, w=0.22, h=0.15, colour=colour, fill=fill)
+        ax.text(0.5, 0.12, what, ha="center", fontsize=10.5, color=GREY)
+    fig.text(0.5, 0.03, "y = np.arange(12).reshape(3, 4)", ha="center", fontsize=11.5,
+             family=MONO, color=INK)
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    save(fig, out, "array_index")
+
+
+# ===================================================== 10b. broadcasting
+def fig_broadcasting(out: Path) -> None:
+    """A smaller array is stretched along the missing axis, without a copy."""
+    fig, axes = plt.subplots(1, 2, figsize=WIDE)
+
+    for ax, title, vec, along_rows in (
+            (axes[0], "y + [10, 20, 30, 40]", ("10", "20", "30", "40"), True),
+            (axes[1], "y + [[100], [200], [300]]", ("100", "200", "300"), False)):
+        blank(ax)
+        ax.set_title(title, fontsize=12, family=MONO)
+        w, h = 0.085, 0.12
+        _grid(ax, 0.02, 0.66, 3, 4, set(), w=w, h=h)
+        ax.text(0.39, 0.60, "+", fontsize=16, ha="center", va="center")
+        x0 = 0.43
+        for r in range(3):
+            for c in range(4):
+                real = (r == 0) if along_rows else (c == 0)
+                v = vec[c] if along_rows else vec[r]
+                _cell(ax, x0 + c * w, 0.66 - r * h, w, h, v,
+                      ec=(GREEN if real else FAINT), fc=("#eafaec" if real else "white"),
+                      fs=9.5, tc=(INK if real else GREY))
+        ax.text(0.5, 0.18, "shape (3, 4) + (4,)" if along_rows else
+                "shape (3, 4) + (3, 1)", ha="center", fontsize=11, family=MONO,
+                color=INK)
+        ax.text(0.5, 0.08, "the row is repeated down" if along_rows else
+                "the column is repeated across", ha="center", fontsize=10.5,
+                color=GREY)
+
+    fig.text(0.5, 0.01, "shapes are compared from the right: equal, or 1",
+             ha="center", fontsize=11.5, color=INK)
+    fig.tight_layout(rect=(0, 0.06, 1, 1))
+    save(fig, out, "broadcasting")
+
+
+# ===================================================== 11. axis
+def fig_axes(out: Path) -> None:
+    """axis=0 collapses the rows (one result per column), axis=1 the columns."""
+    fig, axes = plt.subplots(1, 2, figsize=WIDE)
+    for ax, title, axis in ((axes[0], "y.sum(axis=0)", 0), (axes[1], "y.sum(axis=1)", 1)):
+        blank(ax)
+        ax.set_title(title, fontsize=13, family=MONO,
+                     color=(PURPLE if axis == 0 else AMBER))
+        w, h = 0.11, 0.12
+        _grid(ax, 0.10, 0.76, 3, 4, set(), w=w, h=h)
+        if axis == 0:
+            for c in range(4):
+                x = 0.10 + c * w + 0.8 * w
+                arrow(ax, (x, 0.86), (x, 0.44), color=PURPLE, lw=1.4)
+                _cell(ax, 0.10 + c * w, 0.28, w, h, str(12 + 3 * c), ec=PURPLE,
+                      fc="#f3effa", fs=10.5)
+            ax.text(0.33, 0.12, "one sum per column, shape (4,)", ha="center",
+                    fontsize=10.5, color=GREY)
+        else:
+            for r in range(3):
+                y = 0.82 - r * h
+                arrow(ax, (0.10, y - 0.03), (0.60, y - 0.03), color=AMBER, lw=1.4)
+                _cell(ax, 0.66, y - h / 2, w, h, str(6 + 16 * r), ec=AMBER,
+                      fc="#fdf6e9", fs=10.5)
+            ax.text(0.40, 0.12, "one sum per row, shape (3,)", ha="center",
+                    fontsize=10.5, color=GREY)
+    fig.text(0.5, 0.03, "the axis you name is the one that disappears",
+             ha="center", fontsize=11.5, color=INK)
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    save(fig, out, "axes")
+
+
+# ===================================================== 12. boolean masks
+def fig_masks(out: Path) -> None:
+    """A comparison gives an array of booleans; indexing with it keeps the Trues."""
+    fig, ax = plt.subplots(figsize=WIDE)
+    blank(ax)
+    bmi = [22.1, 31.4, 18.0, 27.5, 35.2, 24.3]
+    w, h, x0 = 0.085, 0.13, 0.30
+    rows = [("bmi", [f"{v:g}" for v in bmi], BLUE, None),
+            ("bmi >= 30", [str(v >= 30) for v in bmi], GREY, [v >= 30 for v in bmi]),
+            ("bmi[bmi >= 30]", ["31.4", "35.2"], RED, None)]
+    for i, (label, cells, colour, flags) in enumerate(rows):
+        y = 0.76 - i * 0.24
+        ax.text(x0 - 0.03, y + h / 2, label, ha="right", va="center", fontsize=12.5,
+                family=MONO, color=INK)
+        for j, v in enumerate(cells):
+            on = flags[j] if flags else True
+            ec = (RED if (flags and on) else colour)
+            fc = ("#fbeaea" if (flags and on) or colour == RED else "white")
+            _cell(ax, x0 + j * w, y, w, h, v, ec=ec, fc=fc, fs=10.5,
+                  tc=(INK if on else GREY))
+    ax.text(x0 + 6 * w + 0.03, 0.76 + h / 2, "float64", fontsize=11, family=MONO,
+            color=BLUE, va="center")
+    ax.text(x0 + 6 * w + 0.03, 0.52 + h / 2, "bool", fontsize=11, family=MONO,
+            color=GREY, va="center")
+    ax.text(x0 + 2 * w + 0.03, 0.28 + h / 2, "only the True positions", fontsize=11,
+            color=RED, va="center")
+
+    ax.text(0.02, 0.10, "(bmi >= 30).sum()  ->  2      (bmi >= 30).mean()  ->  0.33",
+            fontsize=12, family=MONO, color=GREEN, ha="left")
+    ax.text(0.02, 0.01, "True counts as 1: a sum counts, a mean is a fraction",
+            fontsize=10.5, color=GREY, ha="left")
+    save(fig, out, "masks")
+
+
+# ===================================================== 13. the cohort
+def fig_bmi_hist(out: Path) -> None:
+    """The mini use case of the notebook: BMI of 200 simulated patients."""
+    import numpy as np
+
+    rng = np.random.default_rng(42)
+    height = rng.normal(1.70, 0.09, 200)
+    weight = rng.normal(72, 14, 200)
+    bmi = weight / height ** 2
+
+    fig, ax = plt.subplots(figsize=WIDE)
+    ax.hist(bmi, bins=30, color=BLUE, alpha=0.75, edgecolor="white")
+    for x, colour in ((18.5, AMBER), (25, AMBER), (30, RED)):
+        ax.axvline(x, color=colour, lw=1.6, ls="--")
+    ax.set_xlabel("BMI (kg/m²)")
+    ax.set_ylabel("patients")
+    counts = np.bincount(np.digitize(bmi, [18.5, 25, 30]), minlength=4)
+    top = ax.get_ylim()[1] * 1.3
+    ax.set_ylim(0, top)
+    for x, name, n in ((14.5, "under", counts[0]), (21.7, "normal", counts[1]),
+                       (27.5, "over", counts[2]), (35, "obese", counts[3])):
+        ax.text(x, top * 0.93, f"{name}\n{n}", ha="center", va="top", fontsize=10.5,
+                color=INK)
+    save(fig, out, "bmi_hist")
+
+
 FIGURES = (
     fig_names,
     fig_type_map,
@@ -477,6 +727,13 @@ FIGURES = (
     fig_dict_record,
     fig_sets,
     fig_nested,
+    fig_list_vs_array,
+    fig_ndarray,
+    fig_array_index,
+    fig_broadcasting,
+    fig_axes,
+    fig_masks,
+    fig_bmi_hist,
 )
 
 
