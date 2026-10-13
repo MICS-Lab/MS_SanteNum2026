@@ -398,6 +398,145 @@ def fig_toolchain(out: Path) -> None:
     save(fig, out, "toolchain")
 
 
+# ================================================ 11. why version control
+def fig_git_why(out: Path) -> None:
+    """A folder of final_v2_REALLY copies vs one file and a readable history."""
+    fig, axes = plt.subplots(1, 2, figsize=WIDE)
+
+    ax = axes[0]
+    blank(ax)
+    ax.set_title("Copies", color=RED, fontsize=14)
+    files = ["analysis.py", "analysis_v2.py", "analysis_v2_paul.py",
+             "analysis_final.py", "analysis_final_OK.py",
+             "analysis_final_OK_2024-03.py", "analysis_final_REALLY.py"]
+    for i, name in enumerate(files):
+        y = 0.86 - i * 0.095
+        ax.text(0.08, y, "▤", fontsize=13, color=GREY, va="center")
+        ax.text(0.15, y, name, fontsize=11.5, family=MONO, color=INK, va="center")
+    ax.text(0.5, 0.12, "which one produced Table 2?", ha="center", fontsize=11.5,
+            color=RED, style="italic")
+
+    ax = axes[1]
+    blank(ax)
+    ax.set_title("One file, a history", color=GREEN, fontsize=14)
+    ax.text(0.08, 0.86, "▤", fontsize=13, color=GREY, va="center")
+    ax.text(0.15, 0.86, "analysis.py", fontsize=11.5, family=MONO, color=INK,
+            va="center")
+    terminal(ax, (0.5, 0.52), 0.92, 0.42, [
+        ("$ git log --oneline", INK),
+        ("e41c9d2 Exclude patients under 18", AMBER),
+        ("7a0b3f1 Table 2: add BMI column", AMBER),
+        ("c93e5a8 Fix unit: weight in kg", AMBER),
+        ("1f2d6b0 First cleaning script", AMBER),
+    ], title="Terminal")
+    ax.text(0.5, 0.12, "who changed what, when, and why", ha="center",
+            fontsize=11.5, color=GREEN, style="italic")
+
+    fig.tight_layout()
+    save(fig, out, "git_why")
+
+
+# ================================================ 12. the three areas
+def fig_git_areas(out: Path) -> None:
+    """Working folder, staging area, repository: what add and commit move."""
+    fig, ax = plt.subplots(figsize=WIDE)
+    blank(ax)
+
+    cols = [
+        (0.16, "Working folder", "the files you edit", BLUE),
+        (0.50, "Staging area", "what goes in the\nnext snapshot", AMBER),
+        (0.84, "Repository (.git/)", "every snapshot,\nforever", GREEN),
+    ]
+    for x, name, what, colour in cols:
+        box(ax, (x, 0.62), 0.26, 0.34, "", ec=colour, lw=2.2)
+        ax.text(x, 0.74, name, ha="center", fontsize=13, color=colour)
+        ax.text(x, 0.58, what, ha="center", va="center", fontsize=11, color=INK)
+
+    arrow(ax, (0.30, 0.66), (0.36, 0.66), color=AMBER, lw=2.2)
+    ax.text(0.33, 0.90, "git add", ha="center", fontsize=13, family=MONO,
+            color=AMBER)
+    ax.plot([0.33, 0.33], [0.86, 0.70], color=AMBER, lw=1, ls=":")
+    arrow(ax, (0.64, 0.66), (0.70, 0.66), color=GREEN, lw=2.2)
+    ax.text(0.67, 0.90, "git commit", ha="center", fontsize=13, family=MONO,
+            color=GREEN)
+    ax.plot([0.67, 0.67], [0.86, 0.70], color=GREEN, lw=1, ls=":")
+
+    ax.text(0.16, 0.34, "git status\ngit diff", ha="center", fontsize=11.5,
+            family=MONO, color=GREY)
+    ax.text(0.50, 0.34, "git diff --staged", ha="center", fontsize=11.5,
+            family=MONO, color=GREY)
+    ax.text(0.84, 0.34, "git log\ngit show", ha="center", fontsize=11.5,
+            family=MONO, color=GREY)
+
+    ax.text(0.5, 0.10, "A commit is a snapshot of the whole project, with an author, "
+            "a date and a message.", ha="center", fontsize=12.5, color=INK)
+    save(fig, out, "git_areas")
+
+
+# ================================================ 13. history and branches
+def fig_git_history(out: Path) -> None:
+    """A chain of commits, HEAD, and one branch merged back."""
+    fig, ax = plt.subplots(figsize=WIDE)
+    blank(ax)
+
+    main = [(0.08, "1f2d6b0"), (0.24, "c93e5a8"), (0.40, "7a0b3f1"),
+            (0.72, "b52e0aa"), (0.90, "e41c9d2")]
+    side = [(0.50, "4d8c1e7"), (0.62, "90aa3c2")]
+    ym, ys = 0.62, 0.30
+    xs = [x for x, _ in main]
+    ax.plot(xs, [ym] * len(xs), color=BLUE, lw=2.5, zorder=1)
+    ax.plot([0.40, 0.50, 0.62, 0.72], [ym, ys, ys, ym], color=PURPLE, lw=2.5,
+            zorder=1)
+    for x, h in main:
+        ax.plot(x, ym, "o", ms=20, color="white", mec=BLUE, mew=2.5, zorder=2)
+        ax.text(x, ym + 0.10, h, ha="center", fontsize=10.5, family=MONO, color=INK)
+    for x, h in side:
+        ax.plot(x, ys, "o", ms=20, color="white", mec=PURPLE, mew=2.5, zorder=2)
+        ax.text(x, ys - 0.11, h, ha="center", fontsize=10.5, family=MONO, color=INK)
+
+    ax.text(0.02, ym, "main", ha="left", va="center", fontsize=12, family=MONO,
+            color=BLUE, fontweight="bold")
+    ax.text(0.40, ys, "new-plot", ha="right", va="center", fontsize=12,
+            family=MONO, color=PURPLE, fontweight="bold")
+    box(ax, (0.90, 0.92), 0.10, 0.09, "HEAD", ec=RED, fs=11, mono=True, tc=RED)
+    arrow(ax, (0.90, 0.87), (0.90, 0.77), color=RED)
+    ax.text(0.72, 0.76, "merge", ha="center", fontsize=10.5, color=PURPLE)
+
+    ax.text(0.5, 0.06, "each commit points to its parent  ·  a branch is a movable "
+            "label  ·  HEAD is where you are",
+            ha="center", fontsize=12, color=INK)
+    save(fig, out, "git_history")
+
+
+# ================================================ 14. local and remote
+def fig_git_remote(out: Path) -> None:
+    """Your laptop, GitHub, a colleague: clone, push, pull."""
+    fig, ax = plt.subplots(figsize=WIDE)
+    blank(ax)
+
+    box(ax, (0.50, 0.76), 0.30, 0.26, "GitHub\n(remote: origin)", ec=INK, fs=13)
+    box(ax, (0.15, 0.30), 0.24, 0.24, "your laptop\n.git/", ec=BLUE, fs=12)
+    box(ax, (0.85, 0.30), 0.24, 0.24, "a colleague\n.git/", ec=PURPLE, fs=12)
+
+    arrow(ax, (0.22, 0.43), (0.38, 0.64), color=GREEN, lw=2.2)
+    ax.text(0.24, 0.57, "git push", ha="right", fontsize=12, family=MONO,
+            color=GREEN)
+    arrow(ax, (0.42, 0.62), (0.28, 0.42), color=BLUE, lw=2.2)
+    ax.text(0.39, 0.48, "git pull", ha="left", fontsize=12, family=MONO,
+            color=BLUE)
+
+    arrow(ax, (0.62, 0.62), (0.78, 0.43), color=PURPLE, lw=2.2, ls="--")
+    ax.text(0.76, 0.57, "git clone\n(once)", ha="left", fontsize=12, family=MONO,
+            color=PURPLE)
+
+    ax.text(0.5, 0.36, "every copy holds\nthe full history", ha="center",
+            fontsize=11, color=GREY, style="italic")
+    ax.text(0.5, 0.07, "commit is local and offline  ·  push and pull synchronise  "
+            "·  GitHub adds issues, reviews, a web page",
+            ha="center", fontsize=11.5, color=INK)
+    save(fig, out, "git_remote")
+
+
 FIGURES = (
     fig_gui_vs_cli,
     fig_terminal_shell,
@@ -409,6 +548,10 @@ FIGURES = (
     fig_interop,
     fig_environments,
     fig_toolchain,
+    fig_git_why,
+    fig_git_areas,
+    fig_git_history,
+    fig_git_remote,
 )
 
 
