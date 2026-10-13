@@ -1,6 +1,6 @@
 ---
 title: |
-  Session 1\
+  Session 2\
   The Command Line
 subtitle: "Digital Health, Mastère Spécialisé · 2026"
 author: "Paul Dubois"
@@ -106,4 +106,122 @@ Do not try to teach these exhaustively (the notebook does that). Here just estab
 that the toolbox is small, and that each one is a verb you can look up.
 `sort | uniq -c` is the shell's `value_counts()`; say that out loud, it converts
 anyone who already knows pandas.
+:::
+
+# 3. Version control
+
+## Which file is the final one?
+
+![](img/git_why.png)
+
+::: notes
+Everyone in the room has a folder like the one on the left. It fails exactly when it
+matters: a reviewer asks which version of the script produced Table 2, and nobody knows.
+git replaces copies with one file and a history. Each change is recorded with who made
+it, when, and a message that says why. In a regulated setting (a clinical study, a
+CE-marked device) this traceability is not a nice-to-have: it is what an audit asks for.
+git is a command-line program: everything from the first two sections applies.
+:::
+
+## Creating a snapshot
+
+![](img/git_areas.png)
+
+::: notes
+The one mental model to get right. You edit files in the working folder as usual.
+`git add` chooses which changes go into the next snapshot (the staging area). `git commit`
+records that snapshot in the repository, the hidden `.git/` folder.
+Why the middle step: you changed three files but only two belong to the same fix. Stage
+those two, commit, then stage and commit the third with its own message.
+`git status` is the command to type when lost: it says what is in each area, and
+usually suggests the next command.
+:::
+
+## Daily loop
+
+```bash
+git init              # once per project
+git status            # what changed?
+git diff              # show the changes
+git add clean.py      # stage a file
+git commit -m "Drop rows without age"
+git log --oneline     # the history
+```
+
+::: notes
+Live demo in a scratch folder: `git init`, create a file, `status`, `add`, `status`,
+`commit`, edit, `diff`, commit again, `log`.
+The first time, git asks who you are: `git config --global user.name "..."` and
+`user.email`. Every commit carries that name.
+A good message completes the sentence "this commit will...": "Drop rows without age",
+not "update" or "fix". One logical change per commit.
+:::
+
+## History and branches
+
+![](img/git_history.png)
+
+::: notes
+Each commit has an identifier (a hash, shortened to 7 characters) and points to the
+commit before it: the history is a chain.
+A branch is just a name on a commit, moving forward as you commit. `git switch -c new-plot`
+starts one: try an idea without touching `main`. If it works, `git merge new-plot` brings
+it back; if not, delete the branch and `main` never knew.
+`git switch` / `git checkout <hash>` moves HEAD, and the files in the folder change to
+match that snapshot. Nothing is lost: every commit is still there.
+:::
+
+## Local and remote
+
+![](img/git_remote.png)
+
+::: notes
+git works entirely on your machine: commit on a train, without network. A remote is
+another copy of the repository, usually on GitHub (or GitLab, or the hospital's own
+server). `git clone` makes your copy once; `git push` sends your new commits;
+`git pull` fetches the others' commits and merges them into yours.
+GitHub adds what git does not have: a web page for the project, issues to track bugs,
+pull requests to review a change before it is merged. The course material lives there.
+Two people editing the same lines produce a conflict: git marks both versions in the
+file, you choose, then commit. It is a normal event, not an error.
+:::
+
+## Working with GitHub
+
+```bash
+git clone https://github.com/org/repo
+cd repo
+# ... edit, add, commit ...
+git pull            # get the others' work
+git push            # publish yours
+```
+
+::: notes
+The everyday collaboration loop: pull before starting, push when done.
+Authentication: GitHub no longer accepts your password on the command line. Use an SSH
+key (`ssh-keygen`, then paste the public key in GitHub settings) or `gh auth login`.
+This is a good exercise in its own right, and it reuses `ssh` from the first section.
+For a new project: create the empty repository on GitHub, then `git remote add origin
+<url>` and `git push -u origin main` from your existing folder.
+:::
+
+## What to ignore
+
+```bash
+# .gitignore
+data/          # patient data
+*.csv
+.env           # passwords, API keys
+.venv/         # re-created by uv sync
+__pycache__/
+```
+
+::: notes
+The health-data rule of this session. A commit is forever: deleting a file in a later
+commit leaves it in the history, readable by anyone who clones. A patient file pushed to
+a public GitHub repository is a data breach under GDPR, and must be reported.
+`.gitignore` lists the patterns git must never track: data, secrets, generated files.
+Write it first, before the first `git add .`.
+The repository holds the code that reads the data, and a README saying where the data
+lives and who may access it. The data itself stays on the secured server.
 :::
