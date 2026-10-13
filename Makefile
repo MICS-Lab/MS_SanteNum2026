@@ -13,6 +13,12 @@ C01_STEMS := names type_map numbers truthy string_index conversions containers \
              dtype_memory array_index broadcasting axes masks bmi_hist
 C01_FIGURES := $(foreach f,$(C01_STEMS),Programming01/Session01/img/$(f).png)
 
+# Programming01/Session02: conditions, loops, functions and classes, from
+# scripts/make_figures_c02.py
+C02_STEMS := branching boolean for_anatomy loop_helpers_a loop_helpers_b while_loop break_continue \
+             comprehension function_anatomy class_anatomy inheritance ward_model
+C02_FIGURES := $(foreach f,$(C02_STEMS),Programming01/Session02/img/$(f).png)
+
 # Programming01/Session03: one figure per concept, from scripts/make_figures_c03.py
 C03_STEMS := gui_vs_cli terminal_shell anatomy filesystem pipeline reproducible \
              python_vs_bash interop environments toolchain \
@@ -33,12 +39,15 @@ C01_DATA := Programming01/data/patients.csv
 .PHONY: slides figures data clean-slides clean-figures
 slides: $(SLIDE_TARGETS)
 
-figures: $(C00_FIGURES) $(C01_FIGURES) $(C03_FIGURES) $(C04_FIGURES)
+figures: $(C00_FIGURES) $(C01_FIGURES) $(C02_FIGURES) $(C03_FIGURES) $(C04_FIGURES)
 
 data: $(C01_DATA)
 
 $(C00_FIGURES): scripts/make_figures_c00.py scripts/slidefig.py
 	python3 scripts/make_figures_c00.py Programming01/Session00/img
+
+$(C02_FIGURES): scripts/make_figures_c02.py scripts/slidefig.py
+	python3 scripts/make_figures_c02.py Programming01/Session02/img
 
 $(C03_FIGURES): scripts/make_figures_c03.py scripts/slidefig.py
 	python3 scripts/make_figures_c03.py Programming01/Session03/img
@@ -54,6 +63,7 @@ $(C01_DATA): scripts/make_data_c01.py
 
 Programming01/Session00/slides.pptx: $(C00_FIGURES)
 Programming01/Session01/slides.pptx: $(C01_FIGURES)
+Programming01/Session02/slides.pptx: $(C02_FIGURES)
 Programming01/Session03/slides.pptx: $(C03_FIGURES)
 Programming01/Session04/slides.pptx: $(C04_FIGURES)
 
@@ -65,4 +75,4 @@ clean-slides:
 	rm -f $(SLIDE_TARGETS)
 
 clean-figures:
-	rm -f $(C00_FIGURES) $(C01_FIGURES) $(C03_FIGURES) $(C04_FIGURES)
+	rm -f $(C00_FIGURES) $(C01_FIGURES) $(C02_FIGURES) $(C03_FIGURES) $(C04_FIGURES)
