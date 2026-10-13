@@ -1,6 +1,6 @@
 ---
 title: |
-  Session 3\
+  Session 4\
   Plotting with Matplotlib
 subtitle: "Digital Health, Mastère Spécialisé · 2026"
 author: "Paul Dubois"
