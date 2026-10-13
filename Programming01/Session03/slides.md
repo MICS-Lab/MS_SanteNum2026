@@ -1,6 +1,6 @@
 ---
 title: |
-  Session 2\
+  Session 3\
   The Command Line
 subtitle: "Digital Health, Mastère Spécialisé · 2026"
 author: "Paul Dubois"
