@@ -15,8 +15,14 @@ C01_FIGURES := $(foreach f,$(C01_STEMS),Programming01/Session01/img/$(f).png)
 
 # Programming01/Session02: one figure per concept, from scripts/make_figures_c02.py
 C02_STEMS := gui_vs_cli terminal_shell anatomy filesystem pipeline reproducible \
-             python_vs_bash interop environments toolchain
+             python_vs_bash interop environments toolchain \
+             git_why git_areas git_history git_remote
 C02_FIGURES := $(foreach f,$(C02_STEMS),Programming01/Session02/img/$(f).png)
+
+# Programming01/Session03: matplotlib, from scripts/make_figures_c03.py
+C03_STEMS := anscombe anatomy subplots_grid plot_types line scatter hist_bins bar_box \
+             imshow colormaps before_after dashboard
+C03_FIGURES := $(foreach f,$(C03_STEMS),Programming01/Session03/img/$(f).png)
 
 # Programming01/Session02/img/datacenter.jpg is a public domain photograph, not a
 # generated figure: it is committed, and img/CREDITS.md records where it comes from
@@ -27,7 +33,7 @@ C01_DATA := Programming01/data/patients.csv
 .PHONY: slides figures data clean-slides clean-figures
 slides: $(SLIDE_TARGETS)
 
-figures: $(C00_FIGURES) $(C01_FIGURES) $(C02_FIGURES)
+figures: $(C00_FIGURES) $(C01_FIGURES) $(C02_FIGURES) $(C03_FIGURES)
 
 data: $(C01_DATA)
 
@@ -40,12 +46,16 @@ $(C02_FIGURES): scripts/make_figures_c02.py scripts/slidefig.py
 $(C01_FIGURES): scripts/make_figures_c01.py scripts/slidefig.py
 	python3 scripts/make_figures_c01.py Programming01/Session01/img
 
+$(C03_FIGURES): scripts/make_figures_c03.py scripts/slidefig.py
+	python3 scripts/make_figures_c03.py Programming01/Session03/img
+
 $(C01_DATA): scripts/make_data_c01.py
 	python3 scripts/make_data_c01.py Programming01/data
 
 Programming01/Session00/slides.pptx: $(C00_FIGURES)
 Programming01/Session01/slides.pptx: $(C01_FIGURES)
 Programming01/Session02/slides.pptx: $(C02_FIGURES)
+Programming01/Session03/slides.pptx: $(C03_FIGURES)
 
 %.pptx: %.md scripts/fit_pptx.py
 	pandoc $< -o $@ --slide-level=2 --resource-path=$(dir $<)
@@ -55,4 +65,4 @@ clean-slides:
 	rm -f $(SLIDE_TARGETS)
 
 clean-figures:
-	rm -f $(C00_FIGURES) $(C01_FIGURES) $(C02_FIGURES)
+	rm -f $(C00_FIGURES) $(C01_FIGURES) $(C02_FIGURES) $(C03_FIGURES)
