@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Render the illustration figures used by the Programming01 Session04 slides.
 
-Session04 is matplotlib: why we plot, the anatomy of a figure, the figure/axes model,
+Session04 opens with pandas (the DataFrame, a table workflow, tables vs arrays) and
+then turns to matplotlib: why we plot, the anatomy of a figure, the figure/axes model,
 one plot type per question (line, scatter, histogram, bar, box, image), colour maps,
 and what makes a figure readable. Every figure is synthetic and seeded, so
 `make figures` reproduces the same output anywhere.
@@ -54,6 +55,157 @@ def _cohort(n: int = 200, seed: int = 42):
     weight = 22 * height ** 2 + rng.normal(0, 9, n) + 4 * sex
     return height, weight, sex
 
+
+# ===================================================== 0. tables with pandas
+_COLS = ("patient_id", "age", "ward", "los_days")
+_ROWS = (
+    ("P0001", "66.0", "ICU", "6.4"),
+    ("P0002", "NaN", "ICU", "10.6"),
+    ("P0003", "41.0", "ONCO", "3.1"),
+    ("P0004", "78.0", "GERIA", "14.2"),
+)
+
+
+def _table(ax, x0, y0, cw, ch, highlight=1, nan=(1, 1), index=True):
+    """The little ward table: dark header row, one highlighted column, one NaN."""
+    for c, name in enumerate(_COLS):
+        ax.add_patch(FancyBboxPatch((x0 + c * cw, y0), cw, ch,
+                                    boxstyle="square,pad=0", facecolor="#33373d",
+                                    edgecolor="white", lw=1.2))
+        ax.text(x0 + (c + 0.5) * cw, y0 + ch / 2, name, ha="center", va="center",
+                fontsize=10, family=MONO, color="white")
+    for r, row in enumerate(_ROWS):
+        y = y0 - (r + 1) * ch
+        if index:
+            ax.text(x0 - 0.015, y + ch / 2, str(r), ha="right", va="center",
+                    fontsize=10, family=MONO, color=GREY)
+        for c, value in enumerate(row):
+            ax.add_patch(FancyBboxPatch((x0 + c * cw, y), cw, ch,
+                                        boxstyle="square,pad=0",
+                                        facecolor=("#eaf1f8" if c == highlight
+                                                   else "white"),
+                                        edgecolor=FAINT, lw=1.2))
+            ax.text(x0 + (c + 0.5) * cw, y + ch / 2, value, ha="center", va="center",
+                    fontsize=10, family=MONO,
+                    color=(RED if (r, c) == nan else INK))
+    if highlight is not None:
+        ax.add_patch(FancyBboxPatch((x0 + highlight * cw, y0 - len(_ROWS) * ch),
+                                    cw, ch * (len(_ROWS) + 1),
+                                    boxstyle="square,pad=0", fill=False,
+                                    edgecolor=BLUE, lw=2.0))
+
+
+def fig_dataframe(out: Path) -> None:
+    """A DataFrame named the way pandas names it: index, columns, dtypes, Series."""
+    fig, axes = plt.subplots(1, 2, figsize=WIDE,
+                             gridspec_kw={"width_ratios": [1.25, 1]})
+
+    ax = axes[0]
+    blank(ax)
+    ax.set_title("df = pd.read_csv(\"../data/patients.csv\")", fontsize=12, family=MONO)
+    x0, y0, cw, ch = 0.10, 0.66, 0.205, 0.135
+    _table(ax, x0, y0, cw, ch)
+    ax.text(0.04, y0 + ch / 2, "index", fontsize=11, color=GREY, ha="center",
+            va="center", rotation=0)
+    arrow(ax, (0.04, y0 - 0.02), (0.04, y0 - 3.2 * ch), color=GREY, lw=1.2)
+    ax.text(x0 + 2 * cw, y0 + ch + 0.055, "columns", fontsize=11, color=GREY,
+            ha="center", va="center")
+    ax.text(x0 + 1.5 * cw, 0.055, "one column: a Series\ndf[\"age\"]", fontsize=11,
+            color=BLUE, ha="center", va="center")
+    ax.text(x0 + 3.5 * cw, 0.055, "a missing value: NaN", fontsize=11,
+            color=RED, ha="center", va="center")
+
+    ax = axes[1]
+    blank(ax)
+    ax.set_title("df.dtypes, one type per column", fontsize=12)
+    lines = [("patient_id        str", INK),
+             ("age           float64", RED),
+             ("sex               str", INK),
+             ("ward              str", INK),
+             ("admission         str", INK),
+             ("los_days      float64", INK),
+             ("outcome           str", INK),
+             ("", INK),
+             ("df.shape    (240, 7)", GREY),
+             ("len(df)     240", GREY)]
+    for i, (line, colour) in enumerate(lines):
+        ax.text(0.04, 0.92 - i * 0.082, line, fontsize=11, family=MONO,
+                color=colour, ha="left", va="center")
+    ax.text(0.04, 0.07, "one NaN in a column of integers\nmakes the whole column float",
+            fontsize=10.5, color=RED, ha="left", va="center")
+    fig.tight_layout()
+    save(fig, out, "dataframe")
+
+
+def fig_pandas_flow(out: Path) -> None:
+    """Load, clean, select, compute, save: the shape of every table script."""
+    fig, ax = plt.subplots(figsize=WIDE)
+    blank(ax)
+    steps = [
+        (0.085, "patients.csv\n(on disk)", GREY, "#f2f2f2"),
+        (0.290, "df\n240 x 7", BLUE, "white"),
+        (0.500, "clean\n232 x 7", BLUE, "white"),
+        (0.710, "summary\n232 x 4", BLUE, "white"),
+        (0.915, "patients_\nsummary.csv", GREEN, "#f2f2f2"),
+    ]
+    for x, label, ec, fc in steps:
+        box(ax, (x, 0.70), 0.135, 0.22, label, ec=ec, fc=fc, fs=11, mono=True)
+    calls = [
+        (0.1875, "pd.read_csv"),
+        (0.3950, ".dropna()\n.astype(...)"),
+        (0.6050, "[[\"patient_id\",\n\"ward\", \"age\"]]"),
+        (0.8125, ".to_csv(\n index=False)"),
+    ]
+    for x, call in calls:
+        arrow(ax, (x - 0.042, 0.70), (x + 0.042, 0.70))
+        ax.text(x, 0.47, call, fontsize=10.5, family=MONO, color=INK,
+                ha="center", va="center")
+    # box(ax, (0.710, 0.14), 0.52, 0.16,
+    #     "summary[\"stay\"] = summary[\"los_days\"].apply(stay_length)",
+    #     ec=PURPLE, fs=10, mono=True)
+    # arrow(ax, (0.710, 0.58), (0.710, 0.23), color=PURPLE)
+    ax.text(0.03, 0.14, "Every step returns a new table.", fontsize=11, color=GREY,
+            ha="left", va="center")
+    fig.tight_layout()
+    save(fig, out, "pandas_flow")
+
+
+def fig_table_vs_array(out: Path) -> None:
+    """A numpy array holds one type and positions; a DataFrame holds named columns."""
+    fig, axes = plt.subplots(1, 2, figsize=WIDE)
+
+    ax = axes[0]
+    blank(ax)
+    ax.set_title("numpy: one type, positions only", fontsize=12)
+    values = (("1.63", "66.0", "6.4"),
+              ("1.71", "nan", "10.6"),
+              ("1.58", "41.0", "3.1"),
+              ("1.80", "78.0", "14.2"))
+    x0, y0, cw, ch = 0.26, 0.70, 0.16, 0.135
+    for c in range(3):
+        ax.text(x0 + (c + 0.5) * cw, y0 + ch + 0.04, str(c), fontsize=10,
+                family=MONO, color=GREY, ha="center", va="center")
+    for r, row in enumerate(values):
+        y = y0 - r * ch
+        ax.text(x0 - 0.015, y + ch / 2, str(r), ha="right", va="center",
+                fontsize=10, family=MONO, color=GREY)
+        for c, value in enumerate(row):
+            ax.add_patch(FancyBboxPatch((x0 + c * cw, y), cw, ch,
+                                        boxstyle="square,pad=0", facecolor="white",
+                                        edgecolor=FAINT, lw=1.2))
+            ax.text(x0 + (c + 0.5) * cw, y + ch / 2, value, ha="center", va="center",
+                    fontsize=10, family=MONO, color=INK)
+    ax.text(0.5, 0.11, "a[:, 1] is the second column.\nWhich one was that?",
+            fontsize=11, family=MONO, color=RED, ha="center", va="center")
+
+    ax = axes[1]
+    blank(ax)
+    ax.set_title("pandas: named columns, mixed types", fontsize=12)
+    _table(ax, 0.07, 0.70, 0.22, 0.135, highlight=None, index=False)
+    ax.text(0.5, 0.11, "clean[\"age\"] says what it is,\nand \"ICU\" fits in the table.",
+            fontsize=11, family=MONO, color=GREEN, ha="center", va="center")
+    fig.tight_layout()
+    save(fig, out, "table_vs_array")
 
 # ===================================================== 1. look before you compute
 def fig_anscombe(out: Path) -> None:
@@ -456,6 +608,9 @@ def fig_dashboard(out: Path) -> None:
 
 
 FIGURES = (
+    fig_dataframe,
+    fig_pandas_flow,
+    fig_table_vs_array,
     fig_anscombe,
     fig_anatomy,
     fig_subplots_grid,

@@ -1,11 +1,175 @@
 ---
 title: |
   Session 4\
-  Plotting with Matplotlib
+  Tables with pandas, plots with Matplotlib
 subtitle: "Digital Health, Mastère Spécialisé · 2026"
 author: "Paul Dubois"
 date: "Week 1, Lecture"
 ---
+
+## The table before the plot
+
+![](img/dataframe.png)
+
+::: notes
+Before any figure there is a table: an export from the hospital information system, a
+spreadsheet from a colleague, the results of a query. pandas is the library that reads it
+and gives you one object, the DataFrame.
+Vocabulary, which every error message uses. The DataFrame is the whole table. Each column
+has a name and one type (`df.dtypes`); one column alone is a Series. Each row has a label,
+the index, which by default is just its position.
+The age column is read as `float64` and not as an integer because of the missing value:
+`NaN` only exists for floats, so one empty cell makes the whole column float. That is the
+first surprise of every real export.
+`df.head()`, `df.shape`, `df.info()`: the three commands to run on any table you receive,
+before anything else.
+:::
+
+## Table or array?
+
+![](img/table_vs_array.png)
+
+::: notes
+A numpy array (Session 3) holds one type and positions. `a[:, 1]` is the second column, and
+nothing in the array says what the second column was: you keep that in your head, or in a
+comment, and one day you get it wrong.
+A DataFrame keeps the names and allows one type per column, so text (`ward`, `outcome`) and
+numbers live in the same table. `clean["age"]` cannot be the wrong column.
+The rule for this course: pandas to load, clean and select; numpy inside, for the
+computation; matplotlib at the end, for the figure. A column is a numpy array underneath,
+so `ax.plot(df["age"], df["los_days"])` just works.
+:::
+
+## Loading a table
+
+```python
+import pandas as pd
+
+df = pd.read_csv("../data/patients.csv")
+df.head()
+df.shape      # (240, 7)
+df.dtypes     # one type per column
+df.info()     # types and the number of values present
+```
+
+::: notes
+`pd.read_csv` is one line for what took a `csv.DictReader` loop, a list of dicts and a
+manual conversion of every field. It also reads Excel (`read_excel`), JSON, SQL and others,
+with the same shape of call.
+Useful arguments when the export does not cooperate: `sep=";"` (the French Excel default),
+`decimal=","`, `na_values=["", "NA", "NR"]`, `parse_dates=["admission"]`,
+`encoding="latin-1"`.
+`df.info()` is the one that tells you how many values are actually present per column, so
+how many are missing.
+:::
+
+## Missing values and types
+
+```python
+df.isna().sum()                  # how many NaN per column
+
+clean = df.dropna()              # keep only the complete rows
+len(df), len(clean)              # 240, 232
+
+clean["age"] = clean["age"].astype("int64")
+clean["ward"] = clean["ward"].astype("category")
+clean["admission"] = pd.to_datetime(clean["admission"])
+```
+
+::: notes
+`isna()` gives a table of True/False, and `.sum()` counts the True per column: the missing
+value report of the export, in one line.
+`dropna()` removes every row with at least one missing value. It is the simplest choice,
+not always the right one: here it costs 8 patients out of 240. `dropna(subset=["age"])`
+drops only on the column that matters, and `fillna(value)` replaces instead of dropping.
+Whatever you choose, say it in the methods section.
+Once the NaN are gone, `astype("int64")` gives back a real integer age. `"category"` is for
+a column with few distinct values (the ward, the outcome): less memory, and it says that
+these are groups. `pd.to_datetime` turns the admission text into real dates, which can be
+subtracted and sorted.
+:::
+
+## Selecting
+
+```python
+clean["age"]                     # one column, a Series
+clean["age"].mean()              # 50.9
+clean["ward"].value_counts()     # how many patients per ward
+
+summary = clean[["patient_id", "age"]]  # a smaller DataFrame
+
+type(clean["age"])               # Series
+type(clean[["age"]])             # DataFrame, one column
+```
+
+::: notes
+One name in the brackets gives a Series, which carries the usual statistics as methods:
+`mean`, `median`, `std`, `min`, `max`, `describe`.
+`value_counts()` is the one you will use constantly on the categorical columns: the number
+of patients per ward, per outcome, per sex, sorted, in one call.
+A list of names in the brackets gives a DataFrame with those columns, in that order. Hence
+the double brackets: the outer ones are the selection, the inner ones are the list.
+Selecting rows instead of columns is a condition: `clean[clean["ward"] == "ICU"]`, exactly
+the boolean masks of Session 3, applied to a table.
+:::
+
+## A new column with .apply
+
+```python
+def stay_length(days):
+    if days < 3:
+        return "short"
+    if days > 10:
+        return "long"
+    return "medium"
+
+summary["stay"] = summary["los_days"].apply(stay_length)
+```
+
+::: notes
+add `summary["age_group"] = summary["age"].apply(lambda a: "minor" if a < 18 else "adult")`?
+
+`.apply(f)` calls `f` on every value of the column and returns a new column of results. The
+function is an ordinary Python function (Session 2), so any rule you can write, you can
+apply: a clinical threshold, a recoding, a parsing of a free text field.
+Assigning to `summary["stay"]` with a name that does not exist yet creates the column.
+For arithmetic, do not use `apply`: `clean["weight"] / clean["height"] ** 2` works on whole
+columns at once, and is much faster because numpy does the loop. Keep `apply` for what
+cannot be written as a formula.
+:::
+
+## Saving a table
+
+```python
+summary.to_csv("patients_summary.csv", index=False)
+
+back = pd.read_csv("patients_summary.csv")
+back.shape        # (232, 6)
+```
+
+::: notes
+`to_csv` writes the table back to disk, and `index=False` keeps the row labels out of the
+file. Without it you get a nameless first column of 0, 1, 2, which the next reader (often
+you, next month) has to clean up again.
+Other formats, same call: `to_excel` when a colleague asks for it, `to_parquet` for a large
+table that stays inside the project (smaller and faster, and it keeps the types).
+Never save over the raw export. The raw file stays untouched, the script rebuilds everything
+else: that is what makes the analysis reproducible.
+:::
+
+## Full workflow
+
+![](img/pandas_flow.png)
+
+::: notes
+This is the shape of almost every analysis script: load, clean, select, compute, save, and
+then plot.
+Every step returns a new table instead of changing the old one, so the variable names
+(`df`, `clean`, `summary`) record the state of the data at each step, and re-running a cell
+cannot corrupt what came before.
+The rest of this session is the last arrow, the figures, with matplotlib. The columns you
+just selected are what you are about to plot.
+:::
 
 ## Understanding with a plot
 

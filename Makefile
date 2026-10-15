@@ -25,8 +25,8 @@ C03_STEMS := gui_vs_cli terminal_shell anatomy filesystem pipeline reproducible 
              git_why git_areas git_history git_remote
 C03_FIGURES := $(foreach f,$(C03_STEMS),Programming01/Session03/img/$(f).png)
 
-# Programming01/Session04: matplotlib, from scripts/make_figures_c04.py
-C04_STEMS := anscombe anatomy subplots_grid plot_types line scatter hist_bins bar_box \
+# Programming01/Session04: pandas and matplotlib, from scripts/make_figures_c04.py
+C04_STEMS := dataframe pandas_flow table_vs_array anscombe anatomy subplots_grid plot_types line scatter hist_bins bar_box \
              imshow colormaps colormap_choice before_after dashboard
 C04_FIGURES := $(foreach f,$(C04_STEMS),Programming01/Session04/img/$(f).png)
 
