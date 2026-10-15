@@ -14,7 +14,9 @@ date: "Week 1, Lecture"
 ```python
 temp = 38.4
 
-if temp >= 38:
+if temp >= 39:
+    print("high fever")
+elif temp >= 38:
     print("fever")
 else:
     print("no fever")
@@ -219,17 +221,17 @@ typo in a key creates a new key instead of an error.
 ![](img/inheritance.png)
 
 ::: notes
-`class Inpatient(Patient)` means "an Inpatient is a Patient, plus a room". The class in
+`class InPatient(Patient)` means "an InPatient is a Patient, plus a room". The class in
 brackets is the parent (base class, superclass); the new one is the child, or subclass.
-Everything defined on `Patient` is available on an `Inpatient` without being written
+Everything defined on `Patient` is available on an `InPatient` without being written
 again: the attributes set in `__init__`, `bmi()`, `add_heart_rate()`, `__repr__`.
 `super().__init__(id, age, weight, height)` calls the parent's constructor, so the shared
 attributes are set in one place, by the class that owns them. Forgetting that call is the
 classic mistake: the object is created, and then `i.bmi()` fails with
-`AttributeError: 'Inpatient' object has no attribute 'weight'`, because nobody ever set
+`AttributeError: 'InPatient' object has no attribute 'weight'`, because nobody ever set
 it.
 `isinstance(i, Patient)` is True, and that is the whole point: code written for patients
-works unchanged on inpatients. The reverse is False; an `Inpatient` is a special case of
+works unchanged on inpatients. The reverse is False; an `InPatient` is a special case of
 `Patient`, not the other way round. Prefer `isinstance(x, Patient)` to
 `type(x) == Patient`, which answers False for every subclass and quietly breaks the idea.
 A warning: inheritance is tempting and often wrong. Use it when the sentence "X is a Y" is
@@ -264,7 +266,7 @@ class InPatient(Patient):
     def __repr__(self):
         return f"InPatient {self.id}, room {self.room}"
 
-i = Inpatient("P003", 71, 95.2, 1.70, room=12)
+i = InPatient("P003", 71, 95.2, 1.70, room=12)
 i.bmi()      # not on InPatient -> found on Patient
 i            # InPatient('P003', room 12)
 ```
@@ -272,17 +274,17 @@ i            # InPatient('P003', room 12)
 ::: notes
 The rule is one line: Python looks for the name on the object's own class first, then on
 its parent, then on *its* parent, up to `object`; the first one found wins.
-`i.bmi()` is not defined on `Inpatient`, so Python walks up and runs the one on `Patient`.
+`i.bmi()` is not defined on `InPatient`, so Python walks up and runs the one on `Patient`.
 `repr(i)` is defined on both, so the child's version wins: that is *overriding*.
 An overridden method can still reuse the one it replaced: `super().__repr__()` inside the
 child calls the parent's version, which is how you extend behaviour instead of copying it.
 Same idea as `super().__init__`, which is nothing more than an overridden `__init__`
 calling the original.
-The payoff is *polymorphism*: one loop over a mixed list of `Patient` and `Inpatient`
+The payoff is *polymorphism*: one loop over a mixed list of `Patient` and `InPatient`
 objects calls `p.bmi()` on each, and each object runs the right version. No test on the
 type anywhere, which is exactly the `if` ladder that rots when a new case appears.
 Debugging habit: when a method does not do what they expect, ask which class it came from.
-`type(i).__mro__` prints the search order, `help(Inpatient)` shows what was inherited and
+`type(i).__mro__` prints the search order, `help(InPatient)` shows what was inherited and
 what was redefined.
 :::
 
