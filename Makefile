@@ -36,7 +36,14 @@ C04_FIGURES := $(foreach f,$(C04_STEMS),Programming01/Session04/img/$(f).png)
 # the synthetic ward export, one level up because every session shares it
 C01_DATA := Programming01/data/patients.csv
 
-.PHONY: slides figures data clean-slides clean-figures
+# the French twins: generated from the English files and translations/fr.json
+NOTEBOOKS := $(wildcard Programming01/Session*/*.ipynb)
+EN_NOTEBOOKS := $(filter-out %-fr.ipynb,$(NOTEBOOKS))
+FR_NOTEBOOKS := $(EN_NOTEBOOKS:.ipynb=-fr.ipynb)
+FR_SLIDES := $(wildcard Programming01/Session*/slides-fr.md)
+
+.PHONY: slides figures data fr translation-status \
+        clean-slides clean-figures clean-fr
 slides: $(SLIDE_TARGETS)
 
 figures: $(C00_FIGURES) $(C01_FIGURES) $(C02_FIGURES) $(C03_FIGURES) $(C04_FIGURES)
@@ -71,8 +78,21 @@ Programming01/Session04/slides.pptx: $(C04_FIGURES)
 	pandoc $< -o $@ --slide-level=2 --resource-path=$(dir $<)
 	python3 scripts/fit_pptx.py $@
 
+# translate the prose that changed, then rewrite every *-fr.ipynb and slides-fr.md.
+# The default engine is free and needs no account; `--engine none` rebuilds the
+# French files from translations/fr.json alone, without translating anything.
+# `make fr slides` then turns every slides-fr.md into its own deck.
+fr:
+	python3 scripts/translate_fr.py
+
+translation-status:
+	python3 scripts/translate_fr.py --status
+
 clean-slides:
 	rm -f $(SLIDE_TARGETS)
+
+clean-fr:
+	rm -f $(FR_NOTEBOOKS) $(FR_SLIDES) $(FR_SLIDES:.md=.pptx)
 
 clean-figures:
 	rm -f $(C00_FIGURES) $(C01_FIGURES) $(C02_FIGURES) $(C03_FIGURES) $(C04_FIGURES)
