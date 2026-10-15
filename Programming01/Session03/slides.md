@@ -50,7 +50,7 @@ Two traps to name now, because both will bite in the exercises:
 
 # 2. Moving around, and moving data
 
-## The filesystem is one tree
+## The file system is one tree
 ![](img/filesystem.png)
 
 ::: notes
@@ -63,11 +63,20 @@ shared, or run on the cluster untouched.
 
 ## Five most usefull commands
 ```bash
-pwd                     # where am I
-cd data/ecg             # go there  (cd ..  goes up, cd  goes home)
-ls -lh                  # what is here, with sizes
-mkdir -p results/2026   # make a folder (and its parents)
-cp a.csv backup/        # copy      (mv = move / rename, rm = delete)
+# where am I
+$ pwd
+# go there  (cd .. to parent directory)
+$ cd data/ecg
+# list files
+$ ls -lh
+# create a folder
+$ mkdir -p results/2026
+# copy
+$ cp a.csv backup_a.csv
+# move / rename
+$ mv a.csv new_a.csv
+# delete
+$ rm new_a.csv
 ```
 
 ::: notes
@@ -140,12 +149,12 @@ usually suggests the next command.
 ## Daily loop
 
 ```bash
-git init              # once per project
-git status            # what changed?
-git diff              # show the changes
-git add clean.py      # stage a file
-git commit -m "Drop rows without age"
-git log --oneline     # the history
+$ git init
+$ git status
+$ git diff
+$ git add clean.py
+$ git commit -m "Drop rows without age"
+$ git log
 ```
 
 ::: notes
@@ -189,11 +198,15 @@ file, you choose, then commit. It is a normal event, not an error.
 ## Working with GitHub
 
 ```bash
-git clone https://github.com/org/repo
-cd repo
+$ git clone https://github.com/org/repo
+$ cd repo
+
 # ... edit, add, commit ...
-git pull            # get the others' work
-git push            # publish yours
+
+# get the others' work
+$ git pull
+# publish yours
+$ git push
 ```
 
 ::: notes
@@ -224,4 +237,112 @@ a public GitHub repository is a data breach under GDPR, and must be reported.
 Write it first, before the first `git add .`.
 The repository holds the code that reads the data, and a README saying where the data
 lives and who may access it. The data itself stays on the secured server.
+:::
+
+# 4. Keeping the code readable: ruff
+
+## One style, decided by a tool
+
+```bash
+$ uv venv
+# create .venv
+$ source .venv/bin/activate # unix
+> .venv\Scripts\activate # windows
+
+$ uv pip install ruff
+# or: uv add --dev ruff
+
+$ ruff --version
+```
+
+::: notes
+`ruff` is a formatter *and* a linter for Python, from the same people as `uv`, so it
+installs the same way and runs just as fast (a whole project in well under a second).
+Two jobs, worth separating in their heads:
+(1) the formatter rewrites the layout of your code: indentation, quotes, line breaks,
+  spaces around operators. It never changes what the code does.
+(2) the linter reads the code and reports mistakes: an unused import, a variable
+  assigned and never read, a name that does not exist.
+Why bother in a health-data project? Because a diff should show what you changed, not
+who reformatted it. With a formatter, `git diff` contains only real changes, and code
+review stops being an argument about spaces.
+Note `uv add --dev ruff`: it is a development tool, not a dependency of the analysis, so
+it belongs in the dev group of `pyproject.toml`.
+If `ruff` is not on the path, run it through uv: `uv run ruff --version`.
+:::
+
+## Format, and check
+
+```bash
+# format one file
+$ ruff format clean.py
+# format everything, recursively
+$ ruff format .
+
+# report, but change nothing
+$ ruff format --check .
+# lint: find likely mistakes
+$ ruff check .
+# lint, and fix what is safe
+$ ruff check --fix .
+```
+
+::: notes
+Three commands to remember, and the difference between them is the whole point.
+`ruff format <path>` rewrites the file in place and prints `1 file reformatted`. A
+directory (`.` is the current one) means every `.py` file below it; files listed in
+`.gitignore` are skipped, so `.venv/` is not touched.
+`--check` is the read-only version: it lists the files that *would* change and exits with
+a non-zero status if there are any. That is exactly what you put in a pull-request check
+or a git hook: it fails the build instead of silently editing the author's code.
+`ruff check` is the linter, a different command from `format`; `--fix` applies only the
+corrections ruff considers safe.
+Practical advice: run `ruff format .` once at the start of a project, commit that as
+"format with ruff" on its own, and from then on every diff stays small. Doing it in the
+middle of a feature branch produces a 400-line commit that hides the one line that
+matters.
+Demonstrate live on `clean.py` from the notebook: `ruff format --check clean.py`, then
+`ruff format clean.py`, then `git diff`.
+:::
+
+## A lint check, safe and unsafe
+
+```python
+import os
+# F401 unused import   -> safe fix
+import pandas as pd
+
+def mean_hr(path):
+    df = pd.read_csv(path)
+    n = len(df)
+    # F841 unused variable -> unsafe fix
+    return df["hr"].mean()
+
+```
+
+```bash
+
+$ ruff check vitals.py
+# Found 2 errors:
+# * 1 fixable with `--fix`
+# * 1 unsafe fix available with `--fix --unsafe-fixes`
+```
+
+::: notes
+Two real findings on seven lines, and they are not equally safe to repair.
+`F401 os imported but unused`: the import does nothing, so deleting the line cannot
+change the result. Ruff marks that fix **safe**, and `ruff check --fix vitals.py`
+removes it for you (and sorts the remaining imports, `I001`).
+`F841 local variable n is assigned to but never used`: here ruff's fix is to drop the
+`n =` and keep the call, `len(df)`. It marks it **unsafe**, because the right-hand side
+might be doing something: `n = log_access(patient_id)` would still be called, but
+`n = df.pop("hr")` changes `df`, and deleting the whole line would change the result.
+Ruff refuses to guess. So `--fix` leaves it alone and tells you a `--unsafe-fixes` is
+available; you only get it with `ruff check --fix --unsafe-fixes .`, and then you read
+the diff before committing.
+The rule for the room: `--fix` can run unattended, even in a hook. `--unsafe-fixes` is
+something you run yourself, on a clean working tree, and check with `git diff`.
+Also note F841 is often a real bug, not untidiness: the variable you computed and forgot
+to return, or a typo where you assigned `mena` and used `mean`. Do not auto-delete the
+evidence, read it.
 :::
