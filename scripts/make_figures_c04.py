@@ -41,7 +41,7 @@ def _vitals(seed: int = 3):
     """48 hours of hourly temperature and heart rate for one febrile patient."""
     rng = np.random.default_rng(seed)
     t = np.arange(48)
-    fever = 1.6 * np.exp(-((t - 20) / 7.0) ** 2)
+    fever = 1.6 * np.exp(-(((t - 20) / 7.0) ** 2))
     temp = 36.9 + fever + rng.normal(0, 0.12, t.size)
     hr = 74 + 14 * fever + rng.normal(0, 3, t.size)
     return t, temp, hr
@@ -52,7 +52,7 @@ def _cohort(n: int = 200, seed: int = 42):
     rng = np.random.default_rng(seed)
     sex = rng.integers(0, 2, n)  # 0 = F, 1 = M
     height = rng.normal(1.63, 0.07, n) + 0.13 * sex
-    weight = 22 * height ** 2 + rng.normal(0, 9, n) + 4 * sex
+    weight = 22 * height**2 + rng.normal(0, 9, n) + 4 * sex
     return height, weight, sex
 
 
@@ -69,70 +69,161 @@ _ROWS = (
 def _table(ax, x0, y0, cw, ch, highlight=1, nan=(1, 1), index=True):
     """The little ward table: dark header row, one highlighted column, one NaN."""
     for c, name in enumerate(_COLS):
-        ax.add_patch(FancyBboxPatch((x0 + c * cw, y0), cw, ch,
-                                    boxstyle="square,pad=0", facecolor="#33373d",
-                                    edgecolor="white", lw=1.2))
-        ax.text(x0 + (c + 0.5) * cw, y0 + ch / 2, name, ha="center", va="center",
-                fontsize=10, family=MONO, color="white")
+        ax.add_patch(
+            FancyBboxPatch(
+                (x0 + c * cw, y0),
+                cw,
+                ch,
+                boxstyle="square,pad=0",
+                facecolor="#33373d",
+                edgecolor="white",
+                lw=1.2,
+            )
+        )
+        ax.text(
+            x0 + (c + 0.5) * cw,
+            y0 + ch / 2,
+            name,
+            ha="center",
+            va="center",
+            fontsize=10,
+            family=MONO,
+            color="white",
+        )
     for r, row in enumerate(_ROWS):
         y = y0 - (r + 1) * ch
         if index:
-            ax.text(x0 - 0.015, y + ch / 2, str(r), ha="right", va="center",
-                    fontsize=10, family=MONO, color=GREY)
+            ax.text(
+                x0 - 0.015,
+                y + ch / 2,
+                str(r),
+                ha="right",
+                va="center",
+                fontsize=10,
+                family=MONO,
+                color=GREY,
+            )
         for c, value in enumerate(row):
-            ax.add_patch(FancyBboxPatch((x0 + c * cw, y), cw, ch,
-                                        boxstyle="square,pad=0",
-                                        facecolor=("#eaf1f8" if c == highlight
-                                                   else "white"),
-                                        edgecolor=FAINT, lw=1.2))
-            ax.text(x0 + (c + 0.5) * cw, y + ch / 2, value, ha="center", va="center",
-                    fontsize=10, family=MONO,
-                    color=(RED if (r, c) == nan else INK))
+            ax.add_patch(
+                FancyBboxPatch(
+                    (x0 + c * cw, y),
+                    cw,
+                    ch,
+                    boxstyle="square,pad=0",
+                    facecolor=("#eaf1f8" if c == highlight else "white"),
+                    edgecolor=FAINT,
+                    lw=1.2,
+                )
+            )
+            ax.text(
+                x0 + (c + 0.5) * cw,
+                y + ch / 2,
+                value,
+                ha="center",
+                va="center",
+                fontsize=10,
+                family=MONO,
+                color=(RED if (r, c) == nan else INK),
+            )
     if highlight is not None:
-        ax.add_patch(FancyBboxPatch((x0 + highlight * cw, y0 - len(_ROWS) * ch),
-                                    cw, ch * (len(_ROWS) + 1),
-                                    boxstyle="square,pad=0", fill=False,
-                                    edgecolor=BLUE, lw=2.0))
+        ax.add_patch(
+            FancyBboxPatch(
+                (x0 + highlight * cw, y0 - len(_ROWS) * ch),
+                cw,
+                ch * (len(_ROWS) + 1),
+                boxstyle="square,pad=0",
+                fill=False,
+                edgecolor=BLUE,
+                lw=2.0,
+            )
+        )
 
 
 def fig_dataframe(out: Path) -> None:
     """A DataFrame named the way pandas names it: index, columns, dtypes, Series."""
-    fig, axes = plt.subplots(1, 2, figsize=WIDE,
-                             gridspec_kw={"width_ratios": [1.25, 1]})
+    fig, axes = plt.subplots(
+        1, 2, figsize=WIDE, gridspec_kw={"width_ratios": [1.25, 1]}
+    )
 
     ax = axes[0]
     blank(ax)
-    ax.set_title("df = pd.read_csv(\"../data/patients.csv\")", fontsize=12, family=MONO)
+    ax.set_title('df = pd.read_csv("../data/patients.csv")', fontsize=12, family=MONO)
     x0, y0, cw, ch = 0.10, 0.66, 0.205, 0.135
     _table(ax, x0, y0, cw, ch)
-    ax.text(0.04, y0 + ch / 2, "index", fontsize=11, color=GREY, ha="center",
-            va="center", rotation=0)
+    ax.text(
+        0.04,
+        y0 + ch / 2,
+        "index",
+        fontsize=11,
+        color=GREY,
+        ha="center",
+        va="center",
+        rotation=0,
+    )
     arrow(ax, (0.04, y0 - 0.02), (0.04, y0 - 3.2 * ch), color=GREY, lw=1.2)
-    ax.text(x0 + 2 * cw, y0 + ch + 0.055, "columns", fontsize=11, color=GREY,
-            ha="center", va="center")
-    ax.text(x0 + 1.5 * cw, 0.055, "one column: a Series\ndf[\"age\"]", fontsize=11,
-            color=BLUE, ha="center", va="center")
-    ax.text(x0 + 3.5 * cw, 0.055, "a missing value: NaN", fontsize=11,
-            color=RED, ha="center", va="center")
+    ax.text(
+        x0 + 2 * cw,
+        y0 + ch + 0.055,
+        "columns",
+        fontsize=11,
+        color=GREY,
+        ha="center",
+        va="center",
+    )
+    ax.text(
+        x0 + 1.5 * cw,
+        0.055,
+        'one column: a Series\ndf["age"]',
+        fontsize=11,
+        color=BLUE,
+        ha="center",
+        va="center",
+    )
+    ax.text(
+        x0 + 3.5 * cw,
+        0.055,
+        "a missing value: NaN",
+        fontsize=11,
+        color=RED,
+        ha="center",
+        va="center",
+    )
 
     ax = axes[1]
     blank(ax)
     ax.set_title("df.dtypes, one type per column", fontsize=12)
-    lines = [("patient_id        str", INK),
-             ("age           float64", RED),
-             ("sex               str", INK),
-             ("ward              str", INK),
-             ("admission         str", INK),
-             ("los_days      float64", INK),
-             ("outcome           str", INK),
-             ("", INK),
-             ("df.shape    (240, 7)", GREY),
-             ("len(df)     240", GREY)]
+    lines = [
+        ("patient_id        str", INK),
+        ("age           float64", RED),
+        ("sex               str", INK),
+        ("ward              str", INK),
+        ("admission         str", INK),
+        ("los_days      float64", INK),
+        ("outcome           str", INK),
+        ("", INK),
+        ("df.shape    (240, 7)", GREY),
+        ("len(df)     240", GREY),
+    ]
     for i, (line, colour) in enumerate(lines):
-        ax.text(0.04, 0.92 - i * 0.082, line, fontsize=11, family=MONO,
-                color=colour, ha="left", va="center")
-    ax.text(0.04, 0.07, "one NaN in a column of integers\nmakes the whole column float",
-            fontsize=10.5, color=RED, ha="left", va="center")
+        ax.text(
+            0.04,
+            0.92 - i * 0.082,
+            line,
+            fontsize=11,
+            family=MONO,
+            color=colour,
+            ha="left",
+            va="center",
+        )
+    ax.text(
+        0.04,
+        0.07,
+        "one NaN in a column of integers\nmakes the whole column float",
+        fontsize=10.5,
+        color=RED,
+        ha="left",
+        va="center",
+    )
     fig.tight_layout()
     save(fig, out, "dataframe")
 
@@ -153,19 +244,34 @@ def fig_pandas_flow(out: Path) -> None:
     calls = [
         (0.1875, "pd.read_csv"),
         (0.3950, ".dropna()\n.astype(...)"),
-        (0.6050, "[[\"patient_id\",\n\"ward\", \"age\"]]"),
+        (0.6050, '[["patient_id",\n"ward", "age"]]'),
         (0.8125, ".to_csv(\n index=False)"),
     ]
     for x, call in calls:
         arrow(ax, (x - 0.042, 0.70), (x + 0.042, 0.70))
-        ax.text(x, 0.47, call, fontsize=10.5, family=MONO, color=INK,
-                ha="center", va="center")
+        ax.text(
+            x,
+            0.47,
+            call,
+            fontsize=10.5,
+            family=MONO,
+            color=INK,
+            ha="center",
+            va="center",
+        )
     # box(ax, (0.710, 0.14), 0.52, 0.16,
     #     "summary[\"stay\"] = summary[\"los_days\"].apply(stay_length)",
     #     ec=PURPLE, fs=10, mono=True)
     # arrow(ax, (0.710, 0.58), (0.710, 0.23), color=PURPLE)
-    ax.text(0.03, 0.14, "Every step returns a new table.", fontsize=11, color=GREY,
-            ha="left", va="center")
+    ax.text(
+        0.03,
+        0.14,
+        "Every step returns a new table.",
+        fontsize=11,
+        color=GREY,
+        ha="left",
+        va="center",
+    )
     fig.tight_layout()
     save(fig, out, "pandas_flow")
 
@@ -177,35 +283,86 @@ def fig_table_vs_array(out: Path) -> None:
     ax = axes[0]
     blank(ax)
     ax.set_title("numpy: one type, positions only", fontsize=12)
-    values = (("1.63", "66.0", "6.4"),
-              ("1.71", "nan", "10.6"),
-              ("1.58", "41.0", "3.1"),
-              ("1.80", "78.0", "14.2"))
+    values = (
+        ("1.63", "66.0", "6.4"),
+        ("1.71", "nan", "10.6"),
+        ("1.58", "41.0", "3.1"),
+        ("1.80", "78.0", "14.2"),
+    )
     x0, y0, cw, ch = 0.26, 0.70, 0.16, 0.135
     for c in range(3):
-        ax.text(x0 + (c + 0.5) * cw, y0 + ch + 0.04, str(c), fontsize=10,
-                family=MONO, color=GREY, ha="center", va="center")
+        ax.text(
+            x0 + (c + 0.5) * cw,
+            y0 + ch + 0.04,
+            str(c),
+            fontsize=10,
+            family=MONO,
+            color=GREY,
+            ha="center",
+            va="center",
+        )
     for r, row in enumerate(values):
         y = y0 - r * ch
-        ax.text(x0 - 0.015, y + ch / 2, str(r), ha="right", va="center",
-                fontsize=10, family=MONO, color=GREY)
+        ax.text(
+            x0 - 0.015,
+            y + ch / 2,
+            str(r),
+            ha="right",
+            va="center",
+            fontsize=10,
+            family=MONO,
+            color=GREY,
+        )
         for c, value in enumerate(row):
-            ax.add_patch(FancyBboxPatch((x0 + c * cw, y), cw, ch,
-                                        boxstyle="square,pad=0", facecolor="white",
-                                        edgecolor=FAINT, lw=1.2))
-            ax.text(x0 + (c + 0.5) * cw, y + ch / 2, value, ha="center", va="center",
-                    fontsize=10, family=MONO, color=INK)
-    ax.text(0.5, 0.11, "a[:, 1] is the second column.\nWhich one was that?",
-            fontsize=11, family=MONO, color=RED, ha="center", va="center")
+            ax.add_patch(
+                FancyBboxPatch(
+                    (x0 + c * cw, y),
+                    cw,
+                    ch,
+                    boxstyle="square,pad=0",
+                    facecolor="white",
+                    edgecolor=FAINT,
+                    lw=1.2,
+                )
+            )
+            ax.text(
+                x0 + (c + 0.5) * cw,
+                y + ch / 2,
+                value,
+                ha="center",
+                va="center",
+                fontsize=10,
+                family=MONO,
+                color=INK,
+            )
+    ax.text(
+        0.5,
+        0.11,
+        "a[:, 1] is the second column.\nWhich one was that?",
+        fontsize=11,
+        family=MONO,
+        color=RED,
+        ha="center",
+        va="center",
+    )
 
     ax = axes[1]
     blank(ax)
     ax.set_title("pandas: named columns, mixed types", fontsize=12)
     _table(ax, 0.07, 0.70, 0.22, 0.135, highlight=None, index=False)
-    ax.text(0.5, 0.11, "clean[\"age\"] says what it is,\nand \"ICU\" fits in the table.",
-            fontsize=11, family=MONO, color=GREEN, ha="center", va="center")
+    ax.text(
+        0.5,
+        0.11,
+        'clean["age"] says what it is,\nand "ICU" fits in the table.',
+        fontsize=11,
+        family=MONO,
+        color=GREEN,
+        ha="center",
+        va="center",
+    )
     fig.tight_layout()
     save(fig, out, "table_vs_array")
+
 
 # ===================================================== 1. look before you compute
 def fig_anscombe(out: Path) -> None:
@@ -229,11 +386,26 @@ def fig_anscombe(out: Path) -> None:
         ax.set_xlim(2, 21)
         ax.set_ylim(2, 14)
         ax.set_title(f"dataset {i + 1}", fontsize=12)
-        ax.text(0.04, 0.96, f"mean y {yy.mean():.2f}\nvar y  {yy.var(ddof=1):.2f}\n"
-                f"r      {np.corrcoef(xx, yy)[0, 1]:.2f}", transform=ax.transAxes,
-                fontsize=9.5, family=MONO, va="top", color=GREY)
-    fig.text(0.5, 0.02, "Same mean, variance, correlation and fitted line: only the "
-             "plot tells them apart", ha="center", fontsize=11.5, color=INK)
+        ax.text(
+            0.04,
+            0.96,
+            f"mean y {yy.mean():.2f}\nvar y  {yy.var(ddof=1):.2f}\n"
+            f"r      {np.corrcoef(xx, yy)[0, 1]:.2f}",
+            transform=ax.transAxes,
+            fontsize=9.5,
+            family=MONO,
+            va="top",
+            color=GREY,
+        )
+    fig.text(
+        0.5,
+        0.02,
+        "Same mean, variance, correlation and fitted line: only the "
+        "plot tells them apart",
+        ha="center",
+        fontsize=11.5,
+        color=INK,
+    )
     fig.tight_layout(rect=(0, 0.07, 1, 1))
     save(fig, out, "anscombe")
 
@@ -262,18 +434,46 @@ def fig_anatomy(out: Path) -> None:
     ]
     for name, call, xy, coords, ty, colour in notes:
         fig.text(0.66, ty, name, fontsize=12, color=colour, va="center")
-        ax.annotate("", xy=xy, xycoords=coords, xytext=(0.655, ty),
-                    textcoords="figure fraction", annotation_clip=False,
-                    arrowprops={"arrowstyle": "-", "color": GREY, "lw": 1.0,
-                                "shrinkA": 4, "shrinkB": 2})
+        ax.annotate(
+            "",
+            xy=xy,
+            xycoords=coords,
+            xytext=(0.655, ty),
+            textcoords="figure fraction",
+            annotation_clip=False,
+            arrowprops={
+                "arrowstyle": "-",
+                "color": GREY,
+                "lw": 1.0,
+                "shrinkA": 4,
+                "shrinkB": 2,
+            },
+        )
         fig.text(0.79, ty, call, fontsize=10.5, family=MONO, color=GREY, va="center")
     fig.text(0.66, 0.95, "Figure", fontsize=12, color=INK, va="center")
-    fig.text(0.79, 0.95, "the whole canvas: fig", fontsize=10.5, family=MONO,
-             color=GREY, va="center")
-    fig.patches.append(FancyBboxPatch((0.005, 0.005), 0.99, 0.99,
-                                      boxstyle="square,pad=0", fill=False,
-                                      edgecolor=GREY, lw=1.2, ls="--",
-                                      transform=fig.transFigure, figure=fig))
+    fig.text(
+        0.79,
+        0.95,
+        "the whole canvas: fig",
+        fontsize=10.5,
+        family=MONO,
+        color=GREY,
+        va="center",
+    )
+    fig.patches.append(
+        FancyBboxPatch(
+            (0.005, 0.005),
+            0.99,
+            0.99,
+            boxstyle="square,pad=0",
+            fill=False,
+            edgecolor=GREY,
+            lw=1.2,
+            ls="--",
+            transform=fig.transFigure,
+            figure=fig,
+        )
+    )
     save(fig, out, "anatomy")
 
 
@@ -285,32 +485,59 @@ def fig_subplots_grid(out: Path) -> None:
     ax = axes[0]
     blank(ax)
     ax.set_title("fig, axes = plt.subplots(2, 3)", fontsize=12, family=MONO)
-    ax.add_patch(FancyBboxPatch((0.02, 0.06), 0.96, 0.82,
-                                boxstyle="round,pad=0.005,rounding_size=0.02",
-                                facecolor="white", edgecolor=GREY, lw=1.4, ls="--"))
+    ax.add_patch(
+        FancyBboxPatch(
+            (0.02, 0.06),
+            0.96,
+            0.82,
+            boxstyle="round,pad=0.005,rounding_size=0.02",
+            facecolor="white",
+            edgecolor=GREY,
+            lw=1.4,
+            ls="--",
+        )
+    )
     ax.text(0.04, 0.84, "fig", fontsize=11, family=MONO, color=GREY)
     for r in range(2):
         for c in range(3):
             hot = (r, c) == (1, 2)
-            box(ax, (0.19 + c * 0.31, 0.62 - r * 0.36), 0.26, 0.28,
-                f"axes[{r}, {c}]", ec=(RED if hot else BLUE),
-                fc=("#fbeaea" if hot else "white"), fs=11, mono=True)
+            box(
+                ax,
+                (0.19 + c * 0.31, 0.62 - r * 0.36),
+                0.26,
+                0.28,
+                f"axes[{r}, {c}]",
+                ec=(RED if hot else BLUE),
+                fc=("#fbeaea" if hot else "white"),
+                fs=11,
+                mono=True,
+            )
 
     ax = axes[1]
     blank(ax)
     ax.set_title("Each Axes is drawn on separately", fontsize=12)
-    lines = [("axes[0, 0].plot(t, temp)", INK),
-             ("axes[1, 2].hist(bmi)", RED),
-             ("axes[1, 2].set_title(\"BMI\")", RED),
-             ("", INK),
-             ("for ax in axes.flat:", INK),
-             ("    ax.grid(alpha=0.3)", INK),
-             ("", INK),
-             ("fig.suptitle(\"Ward report\")", GREY),
-             ("fig.tight_layout()", GREY)]
+    lines = [
+        ("axes[0, 0].plot(t, temp)", INK),
+        ("axes[1, 2].hist(bmi)", RED),
+        ('axes[1, 2].set_title("BMI")', RED),
+        ("", INK),
+        ("for ax in axes.flat:", INK),
+        ("    ax.grid(alpha=0.3)", INK),
+        ("", INK),
+        ('fig.suptitle("Ward report")', GREY),
+        ("fig.tight_layout()", GREY),
+    ]
     for i, (line, colour) in enumerate(lines):
-        ax.text(0.02, 0.86 - i * 0.095, line, fontsize=11, family=MONO, color=colour,
-                ha="left", va="center")
+        ax.text(
+            0.02,
+            0.86 - i * 0.095,
+            line,
+            fontsize=11,
+            family=MONO,
+            color=colour,
+            ha="left",
+            va="center",
+        )
     fig.tight_layout()
     save(fig, out, "subplots_grid")
 
@@ -321,7 +548,7 @@ def fig_plot_types(out: Path) -> None:
     rng = np.random.default_rng(0)
     t, temp, _ = _vitals()
     height, weight, sex = _cohort()
-    bmi = weight / height ** 2
+    bmi = weight / height**2
 
     fig, axes = plt.subplots(2, 3, figsize=WIDE)
     (a, b, c), (d, e, f) = axes
@@ -341,8 +568,11 @@ def fig_plot_types(out: Path) -> None:
     e.set_title("boxplot: how do groups compare?", fontsize=11)
     e.tick_params(axis="x", labelsize=8)
     yy, xx = np.mgrid[-1:1:128j, -1:1:128j]
-    f.imshow(np.exp(-((xx / 0.8) ** 2 + (yy / 0.6) ** 2) * 2)
-             + 0.1 * rng.normal(size=xx.shape), cmap="gray")
+    f.imshow(
+        np.exp(-((xx / 0.8) ** 2 + (yy / 0.6) ** 2) * 2)
+        + 0.1 * rng.normal(size=xx.shape),
+        cmap="gray",
+    )
     f.set_title("imshow: what does it look like?", fontsize=11)
     f.set_xticks([])
     f.set_yticks([])
@@ -376,7 +606,7 @@ def fig_line(out: Path) -> None:
 def fig_scatter(out: Path) -> None:
     """Height against weight: colour by a category, then by a number."""
     height, weight, sex = _cohort()
-    bmi = weight / height ** 2
+    bmi = weight / height**2
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=WIDE)
 
     for value, name, colour in ((0, "F", PURPLE), (1, "M", AMBER)):
@@ -399,19 +629,40 @@ def fig_scatter(out: Path) -> None:
 def fig_hist_bins(out: Path) -> None:
     """The same 200 values, three bin counts, three different impressions."""
     height, weight, _ = _cohort()
-    bmi = weight / height ** 2
+    bmi = weight / height**2
     fig, axes = plt.subplots(1, 3, figsize=WIDE, sharey=False)
     for ax, bins in zip(axes, (5, 20, 100)):
         ax.hist(bmi, bins=bins, color=PURPLE, alpha=0.8, edgecolor="white")
         ax.set_title(f"bins={bins}", fontsize=12, family=MONO)
         ax.set_xlabel("BMI (kg/m²)")
     axes[0].set_ylabel("patients")
-    axes[0].text(0.5, -0.2, "too coarse: shape hidden", transform=axes[0].transAxes,
-                 ha="center", fontsize=10.5, color=AMBER)
-    axes[1].text(0.5, -0.2, "about right", transform=axes[1].transAxes, ha="center",
-                 fontsize=10.5, color=GREEN)
-    axes[2].text(0.5, -0.2, "too fine: noise", transform=axes[2].transAxes,
-                 ha="center", fontsize=10.5, color=AMBER)
+    axes[0].text(
+        0.5,
+        -0.2,
+        "too coarse: shape hidden",
+        transform=axes[0].transAxes,
+        ha="center",
+        fontsize=10.5,
+        color=AMBER,
+    )
+    axes[1].text(
+        0.5,
+        -0.2,
+        "about right",
+        transform=axes[1].transAxes,
+        ha="center",
+        fontsize=10.5,
+        color=GREEN,
+    )
+    axes[2].text(
+        0.5,
+        -0.2,
+        "too fine: noise",
+        transform=axes[2].transAxes,
+        ha="center",
+        fontsize=10.5,
+        color=AMBER,
+    )
     fig.tight_layout()
     save(fig, out, "hist_bins")
 
@@ -430,14 +681,27 @@ def fig_bar_box(out: Path) -> None:
     ax1.set_ylabel("patients")
     ax1.set_title("ax.bar: patients per ward", fontsize=11)
 
-    ax2.boxplot(los, tick_labels=wards, widths=0.55,
-                medianprops={"color": RED, "lw": 1.6})
+    ax2.boxplot(
+        los, tick_labels=wards, widths=0.55, medianprops={"color": RED, "lw": 1.6}
+    )
     ax2.set_ylabel("length of stay (days)")
     ax2.set_title("ax.boxplot: length of stay per ward", fontsize=11)
-    ax2.annotate("median", xy=(1.28, np.median(los[0])), xytext=(0.55, 19),
-                 fontsize=10, color=RED, arrowprops={"arrowstyle": "->", "color": RED})
-    ax2.annotate("outliers", xy=(2.08, np.max(los[1])), xytext=(2.6, 19), fontsize=10,
-                 color=GREY, arrowprops={"arrowstyle": "->", "color": GREY})
+    ax2.annotate(
+        "median",
+        xy=(1.28, np.median(los[0])),
+        xytext=(0.55, 19),
+        fontsize=10,
+        color=RED,
+        arrowprops={"arrowstyle": "->", "color": RED},
+    )
+    ax2.annotate(
+        "outliers",
+        xy=(2.08, np.max(los[1])),
+        xytext=(2.6, 19),
+        fontsize=10,
+        color=GREY,
+        arrowprops={"arrowstyle": "->", "color": GREY},
+    )
     fig.tight_layout()
     save(fig, out, "bar_box")
 
@@ -445,7 +709,7 @@ def fig_bar_box(out: Path) -> None:
 # ===================================================== 9. images
 def _phantom(n: int = 256):
     """A crude CT-like slice in Hounsfield units: air, body, two lungs, a spine."""
-    yy, xx = np.mgrid[-1:1:n * 1j, -1:1:n * 1j]
+    yy, xx = np.mgrid[-1 : 1 : n * 1j, -1 : 1 : n * 1j]
     img = np.full((n, n), -1000.0)
     img[(xx / 0.85) ** 2 + (yy / 0.62) ** 2 < 1] = 40
     for cx in (-0.38, 0.38):
@@ -472,8 +736,15 @@ def fig_imshow(out: Path) -> None:
     for ax in axes:
         ax.set_xticks([])
         ax.set_yticks([])
-    fig.text(0.5, 0.17, "full range  /  soft-tissue window  /  a slice of the array is "
-             "a crop of the image", ha="center", fontsize=11, color=GREY)
+    fig.text(
+        0.5,
+        0.17,
+        "full range  /  soft-tissue window  /  a slice of the array is "
+        "a crop of the image",
+        ha="center",
+        fontsize=11,
+        color=GREY,
+    )
     fig.tight_layout(rect=(0, 0.07, 1, 1))
     save(fig, out, "imshow")
 
@@ -482,26 +753,37 @@ def fig_imshow(out: Path) -> None:
 def fig_colormaps(out: Path) -> None:
     """Sequential, diverging, and why jet lies about the data."""
     grad = np.linspace(0, 1, 256)[None, :]
-    rows = [("viridis", "sequential: low to high", GREEN),
-            ("gray", "sequential: medical images", GREEN),
-            ("RdBu_r", "diverging: below / above a centre", GREEN),
-            ("jet", "avoid: false edges, unreadable in grey", RED)]
-    fig, axes = plt.subplots(len(rows), 2, figsize=WIDE,
-                             gridspec_kw={"width_ratios": [1, 1]})
+    rows = [
+        ("viridis", "sequential: low to high", GREEN),
+        ("gray", "sequential: medical images", GREEN),
+        ("RdBu_r", "diverging: below / above a centre", GREEN),
+        ("jet", "avoid: false edges, unreadable in grey", RED),
+    ]
+    fig, axes = plt.subplots(
+        len(rows), 2, figsize=WIDE, gridspec_kw={"width_ratios": [1, 1]}
+    )
     for (name, what, colour), (ax_c, ax_l) in zip(rows, axes):
         ax_c.imshow(grad, aspect="auto", cmap=name)
         ax_c.set_xticks([])
         ax_c.set_yticks([])
-        ax_c.set_ylabel(name, rotation=0, ha="right", va="center", fontsize=11.5,
-                        family=MONO)
+        ax_c.set_ylabel(
+            name, rotation=0, ha="right", va="center", fontsize=11.5, family=MONO
+        )
         # the same colour map seen in black and white: luminance only
         rgb = plt.get_cmap(name)(grad[0])[:, :3]
         lum = (0.2126 * rgb[:, 0] + 0.7152 * rgb[:, 1] + 0.0722 * rgb[:, 2])[None, :]
         ax_l.imshow(lum, aspect="auto", cmap="gray", vmin=0, vmax=1)
         ax_l.set_xticks([])
         ax_l.set_yticks([])
-        ax_l.text(1.03, 0.5, what, transform=ax_l.transAxes, fontsize=10.5,
-                  color=colour, va="center")
+        ax_l.text(
+            1.03,
+            0.5,
+            what,
+            transform=ax_l.transAxes,
+            fontsize=10.5,
+            color=colour,
+            va="center",
+        )
     axes[0][0].set_title("colour", fontsize=11)
     axes[0][1].set_title("printed in black and white", fontsize=11)
     fig.tight_layout(rect=(0.04, 0, 0.78, 1))
@@ -511,10 +793,12 @@ def fig_colormaps(out: Path) -> None:
 # ===================================================== 10b. one image, eight colour maps
 def _smooth_field(n: int = 256):
     """A continuous 2D field (think perfusion, mL/100 g/min): no edges, only gradients."""
-    yy, xx = np.mgrid[-1:1:n * 1j, -1:1:n * 1j]
-    field = (np.exp(-((xx + 0.45) ** 2 + (yy + 0.35) ** 2) / 0.32)
-             + 0.75 * np.exp(-((xx - 0.5) ** 2 + (yy - 0.4) ** 2) / 0.18)
-             + 0.35 * (xx + 1) / 2)
+    yy, xx = np.mgrid[-1 : 1 : n * 1j, -1 : 1 : n * 1j]
+    field = (
+        np.exp(-((xx + 0.45) ** 2 + (yy + 0.35) ** 2) / 0.32)
+        + 0.75 * np.exp(-((xx - 0.5) ** 2 + (yy - 0.4) ** 2) / 0.18)
+        + 0.35 * (xx + 1) / 2
+    )
     field -= field.min()
     return 80 * field / field.max()
 
@@ -538,13 +822,27 @@ def fig_colormap_choice(out: Path) -> None:
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_title(f'cmap="{name}"', fontsize=10.5, family=MONO, color=colour)
-        ax.text(0.5, -0.06, what, transform=ax.transAxes, ha="center", va="top",
-                fontsize=9.5, color=colour)
+        ax.text(
+            0.5,
+            -0.06,
+            what,
+            transform=ax.transAxes,
+            ha="center",
+            va="top",
+            fontsize=9.5,
+            color=colour,
+        )
         bar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
         bar.ax.tick_params(labelsize=7.5)
-    fig.text(0.5, 0.015, "The same smooth field, the same vmin/vmax: every band or edge "
-             "you see below comes from the colour map, not from the data",
-             ha="center", fontsize=11, color=INK)
+    fig.text(
+        0.5,
+        0.015,
+        "The same smooth field, the same vmin/vmax: every band or edge "
+        "you see below comes from the colour map, not from the data",
+        ha="center",
+        fontsize=11,
+        color=INK,
+    )
     fig.tight_layout(rect=(0, 0.05, 1, 1))
     save(fig, out, "colormap_choice")
 
@@ -564,14 +862,27 @@ def fig_before_after(out: Path) -> None:
     ax2.text(46, 38.05, "fever", ha="right", va="bottom", fontsize=10, color=GREY)
     ax2.set_xlabel("time since admission (h)", fontsize=11)
     ax2.set_ylabel("temperature (°C)", fontsize=11)
-    ax2.set_title("Fever peaked at 20 h and resolved by 36 h", fontsize=12,
-                  color=GREEN)
+    ax2.set_title("Fever peaked at 20 h and resolved by 36 h", fontsize=12, color=GREEN)
     ax2.spines[["top", "right"]].set_visible(False)
 
-    ax1.text(0.5, -0.2, "no units, two scales mixed, no message", ha="center",
-             transform=ax1.transAxes, fontsize=10.5, color=GREY)
-    ax2.text(0.5, -0.2, "one message, labelled axes with units, threshold named",
-             ha="center", transform=ax2.transAxes, fontsize=10.5, color=GREY)
+    ax1.text(
+        0.5,
+        -0.2,
+        "no units, two scales mixed, no message",
+        ha="center",
+        transform=ax1.transAxes,
+        fontsize=10.5,
+        color=GREY,
+    )
+    ax2.text(
+        0.5,
+        -0.2,
+        "one message, labelled axes with units, threshold named",
+        ha="center",
+        transform=ax2.transAxes,
+        fontsize=10.5,
+        color=GREY,
+    )
     fig.tight_layout()
     save(fig, out, "before_after")
 
@@ -581,7 +892,7 @@ def fig_dashboard(out: Path) -> None:
     """The closing example: one figure, four panels, one patient in context."""
     t, temp, hr = _vitals()
     height, weight, _ = _cohort()
-    bmi = weight / height ** 2
+    bmi = weight / height**2
     fig, axes = plt.subplots(2, 2, figsize=WIDE)
     (a, b), (c, d) = axes
 

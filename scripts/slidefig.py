@@ -103,7 +103,13 @@ def box(ax, xy, w, h, text, fc="white", ec=BLUE, fs=11, lw=1.8, tc=INK, mono=Fal
         )
     )
     ax.text(
-        xy[0], xy[1], text, ha="center", va="center", fontsize=fs, color=tc,
+        xy[0],
+        xy[1],
+        text,
+        ha="center",
+        va="center",
+        fontsize=fs,
+        color=tc,
         family=(MONO if mono else None),
     )
 
@@ -111,8 +117,15 @@ def box(ax, xy, w, h, text, fc="white", ec=BLUE, fs=11, lw=1.8, tc=INK, mono=Fal
 def arrow(ax, a, b, color=GREY, lw=1.8, style="-|>", ls="-"):
     ax.add_patch(
         FancyArrowPatch(
-            a, b, arrowstyle=style, mutation_scale=14, color=color, lw=lw,
-            linestyle=ls, shrinkA=2, shrinkB=2,
+            a,
+            b,
+            arrowstyle=style,
+            mutation_scale=14,
+            color=color,
+            lw=lw,
+            linestyle=ls,
+            shrinkA=2,
+            shrinkB=2,
         )
     )
 
@@ -120,15 +133,44 @@ def arrow(ax, a, b, color=GREY, lw=1.8, style="-|>", ls="-"):
 def terminal(ax, xy, w, h, lines, title="Terminal", ec=INK):
     """A little mock terminal window: dark title bar, monospace body."""
     x, y = xy[0] - w / 2, xy[1] - h / 2
-    ax.add_patch(FancyBboxPatch((x, y), w, h,
-                                boxstyle="round,pad=0.004,rounding_size=0.015",
-                                facecolor="#fbfbfb", edgecolor=ec, linewidth=1.6))
-    ax.add_patch(FancyBboxPatch((x, y + h - 0.075), w, 0.075,
-                                boxstyle="square,pad=0",
-                                facecolor="#33373d", edgecolor="none"))
-    ax.text(x + 0.018, y + h - 0.037, title, ha="left", va="center",
-            fontsize=9, color="white")
+    ax.add_patch(
+        FancyBboxPatch(
+            (x, y),
+            w,
+            h,
+            boxstyle="round,pad=0.004,rounding_size=0.015",
+            facecolor="#fbfbfb",
+            edgecolor=ec,
+            linewidth=1.6,
+        )
+    )
+    ax.add_patch(
+        FancyBboxPatch(
+            (x, y + h - 0.075),
+            w,
+            0.075,
+            boxstyle="square,pad=0",
+            facecolor="#33373d",
+            edgecolor="none",
+        )
+    )
+    ax.text(
+        x + 0.018,
+        y + h - 0.037,
+        title,
+        ha="left",
+        va="center",
+        fontsize=9,
+        color="white",
+    )
     for i, (txt, colour) in enumerate(lines):
-        ax.text(x + 0.018, y + h - 0.135 - i * 0.058, txt, ha="left", va="center",
-                fontsize=10.5, family=MONO, color=colour)
-
+        ax.text(
+            x + 0.018,
+            y + h - 0.135 - i * 0.058,
+            txt,
+            ha="left",
+            va="center",
+            fontsize=10.5,
+            family=MONO,
+            color=colour,
+        )

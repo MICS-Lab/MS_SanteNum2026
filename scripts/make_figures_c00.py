@@ -41,8 +41,14 @@ def fig_levels(out: Path) -> None:
 
     ax = axes[0]
     blank(ax)
-    ax.text(0.34, 0.95, "high level (closer to human understanding)", ha="center",
-            fontsize=11, color=GREEN)
+    ax.text(
+        0.34,
+        0.95,
+        "high level (closer to human understanding)",
+        ha="center",
+        fontsize=11,
+        color=GREEN,
+    )
     rungs = [
         ("Python, R, MATLAB", 0.76, GREEN, "one line can mean a lot of work"),
         ("C, C++, Rust", 0.56, BLUE, "you manage the memory yourself"),
@@ -52,8 +58,14 @@ def fig_levels(out: Path) -> None:
     for name, y, colour, what in rungs:
         box(ax, (0.34, y), 0.56, 0.14, name, ec=colour, fs=12)
         ax.text(0.65, y, what, fontsize=10, color=GREY, va="center", ha="left")
-    ax.text(0.34, 0.03, "low level (closer to the machine)", ha="center",
-            fontsize=11, color=GREY)
+    ax.text(
+        0.34,
+        0.03,
+        "low level (closer to the machine)",
+        ha="center",
+        fontsize=11,
+        color=GREY,
+    )
 
     ax = axes[1]
     blank(ax)
@@ -67,12 +79,19 @@ def fig_levels(out: Path) -> None:
     for i, (label, line, colour) in enumerate(snippets):
         y = 0.80 - i * 0.22
         ax.text(0.0, y, label, fontsize=10.5, color=colour, va="center", ha="left")
-        ax.text(0.24, y, line, fontsize=10.5, family=MONO, color=INK,
-                va="center", ha="left")
+        ax.text(
+            0.24, y, line, fontsize=10.5, family=MONO, color=INK, va="center", ha="left"
+        )
         if i:
             arrow(ax, (0.12, y + 0.16), (0.12, y + 0.05), color=FAINT, lw=2.2)
-    ax.text(0.0, 0.03, "Processor can only run machine code",
-            fontsize=10.5, color=INK, ha="left")
+    ax.text(
+        0.0,
+        0.03,
+        "Processor can only run machine code",
+        fontsize=10.5,
+        color=INK,
+        ha="left",
+    )
 
     fig.tight_layout()
     save(fig, out, "levels")
@@ -86,13 +105,30 @@ def fig_why_python(out: Path) -> None:
     ax = axes[0]
     blank(ax)
     ax.set_title("Popular", fontsize=13, color=BLUE)
-    ax.add_patch(FancyBboxPatch((0.02, 0.76), 0.96, 0.16,
-                                boxstyle="round,pad=0.01,rounding_size=0.03",
-                                facecolor="#fbfbfb", edgecolor=GREY, linewidth=1.4))
-    ax.text(0.07, 0.84, "KeyError: 'age'", fontsize=11, family=MONO, color=RED,
-            va="center", ha="left")
-    for i, hit in enumerate(["Most questions are already answered",
-                            "Documentation is up to date"]):
+    ax.add_patch(
+        FancyBboxPatch(
+            (0.02, 0.76),
+            0.96,
+            0.16,
+            boxstyle="round,pad=0.01,rounding_size=0.03",
+            facecolor="#fbfbfb",
+            edgecolor=GREY,
+            linewidth=1.4,
+        )
+    )
+    ax.text(
+        0.07,
+        0.84,
+        "KeyError: 'age'",
+        fontsize=11,
+        family=MONO,
+        color=RED,
+        va="center",
+        ha="left",
+    )
+    for i, hit in enumerate(
+        ["Most questions are already answered", "Documentation is up to date"]
+    ):
         y = 0.62 - i * 0.13
         ax.text(0.06, y, "\u2713", fontsize=12, color=GREEN, va="center")
         ax.text(0.16, y, hit, fontsize=10.5, color=GREY, va="center", ha="left")
@@ -100,31 +136,63 @@ def fig_why_python(out: Path) -> None:
     ax = axes[1]
     blank(ax)
     ax.set_title("High level", fontsize=13, color=PURPLE)
-    code = ["for patient in ward:", "    if patient.age > 75:",
-            "        elderly.append(patient)"]
-    ax.add_patch(FancyBboxPatch((0.02, 0.60), 0.96, 0.32,
-                                boxstyle="round,pad=0.01,rounding_size=0.03",
-                                facecolor="#fbfbfb", edgecolor=GREY, linewidth=1.4))
+    code = [
+        "for patient in ward:",
+        "    if patient.age > 75:",
+        "        elderly.append(patient)",
+    ]
+    ax.add_patch(
+        FancyBboxPatch(
+            (0.02, 0.60),
+            0.96,
+            0.32,
+            boxstyle="round,pad=0.01,rounding_size=0.03",
+            facecolor="#fbfbfb",
+            edgecolor=GREY,
+            linewidth=1.4,
+        )
+    )
     for i, line in enumerate(code):
-        ax.text(0.06, 0.84 - i * 0.10, line, fontsize=10.5, family=MONO, color=INK,
-                va="center", ha="left")
-    ax.text(0.5, 0.44, "No types to declare,\nNo memory to free",
-            ha="center", fontsize=10.5, color=GREY)
-    ax.text(0.5, 0.08, "quick to learn",
-            ha="center", fontsize=10.5, color=INK)
+        ax.text(
+            0.06,
+            0.84 - i * 0.10,
+            line,
+            fontsize=10.5,
+            family=MONO,
+            color=INK,
+            va="center",
+            ha="left",
+        )
+    ax.text(
+        0.5,
+        0.44,
+        "No types to declare,\nNo memory to free",
+        ha="center",
+        fontsize=10.5,
+        color=GREY,
+    )
+    ax.text(0.5, 0.08, "quick to learn", ha="center", fontsize=10.5, color=INK)
 
     ax = axes[2]
     blank(ax)
     ax.set_title("Fast", fontsize=13, color=GREEN)
-    stack = [("your code (Python)", 0.86, PURPLE, 0.12),
-             ("numpy, pandas, torch", 0.69, BLUE, 0.12),
-             ("C, Fortran, Rust, CUDA", 0.52, GREEN, 0.12)]
+    stack = [
+        ("your code (Python)", 0.86, PURPLE, 0.12),
+        ("numpy, pandas, torch", 0.69, BLUE, 0.12),
+        ("C, Fortran, Rust, CUDA", 0.52, GREEN, 0.12),
+    ]
     for name, y, colour, h in stack:
         box(ax, (0.5, y), 0.92, h, name, ec=colour, fs=10.5)
     for y in (0.775, 0.605):
         arrow(ax, (0.5, y + 0.025), (0.5, y - 0.025), color=GREY, lw=1.4)
-    ax.text(0.5, 0.33, "Few lines convert to compiled code\nand billion operations",
-            ha="center", fontsize=10.5, color=GREY)
+    ax.text(
+        0.5,
+        0.33,
+        "Few lines convert to compiled code\nand billion operations",
+        ha="center",
+        fontsize=10.5,
+        color=GREY,
+    )
 
     fig.tight_layout()
     save(fig, out, "why_python")
@@ -134,11 +202,17 @@ def fig_why_python(out: Path) -> None:
 def _cells(ax, x0, y0, cols, rows, w=0.085, h=0.055, ec=GREY, header=BLUE):
     for r in range(rows):
         for c in range(cols):
-            ax.add_patch(FancyBboxPatch((x0 + c * w, y0 - r * h), w * 0.92, h * 0.86,
-                                        boxstyle="square,pad=0",
-                                        facecolor=("#eef3fa" if r == 0 else "white"),
-                                        edgecolor=(header if r == 0 else ec),
-                                        linewidth=1.0))
+            ax.add_patch(
+                FancyBboxPatch(
+                    (x0 + c * w, y0 - r * h),
+                    w * 0.92,
+                    h * 0.86,
+                    boxstyle="square,pad=0",
+                    facecolor=("#eef3fa" if r == 0 else "white"),
+                    edgecolor=(header if r == 0 else ec),
+                    linewidth=1.0,
+                )
+            )
 
 
 def fig_common_tasks(out: Path) -> None:
@@ -149,10 +223,17 @@ def fig_common_tasks(out: Path) -> None:
     blank(ax)
     ax.set_title("Read a table", fontsize=13)
     _cells(ax, 0.28, 0.86, 4, 4, w=0.11, h=0.075)
-    ax.text(0.5, 0.36, 'pd.read_csv("patients.csv")', ha="center", fontsize=11,
-            family=MONO, color=BLUE)
-#     ax.text(0.5, 0.17, "separators, quoting, encodings,\nmissing values, dates",
-#             ha="center", fontsize=10, color=GREY)
+    ax.text(
+        0.5,
+        0.36,
+        'pd.read_csv("patients.csv")',
+        ha="center",
+        fontsize=11,
+        family=MONO,
+        color=BLUE,
+    )
+    #     ax.text(0.5, 0.17, "separators, quoting, encodings,\nmissing values, dates",
+    #             ha="center", fontsize=10, color=GREY)
 
     ax = axes[1]
     blank(ax)
@@ -161,10 +242,11 @@ def fig_common_tasks(out: Path) -> None:
     ys = [0.64, 0.74, 0.70, 0.83, 0.78, 0.87, 0.72, 0.80, 0.68, 0.76]
     ax.plot(xs, ys, color=RED, lw=1.8, marker="o", ms=3)
     ax.plot([0.14, 0.14, 0.90], [0.90, 0.58, 0.58], color=INK, lw=1.2)
-    ax.text(0.5, 0.36, "plt.plot(t, ecg)", ha="center", fontsize=11,
-            family=MONO, color=BLUE)
-#     ax.text(0.5, 0.17, "axes, ticks, labels, colours,\nand a file you can print",
-#             ha="center", fontsize=10, color=GREY)
+    ax.text(
+        0.5, 0.36, "plt.plot(t, ecg)", ha="center", fontsize=11, family=MONO, color=BLUE
+    )
+    #     ax.text(0.5, 0.17, "axes, ticks, labels, colours,\nand a file you can print",
+    #             ha="center", fontsize=10, color=GREY)
 
     ax = axes[2]
     blank(ax)
@@ -173,12 +255,15 @@ def fig_common_tasks(out: Path) -> None:
     ax.text(0.50, 0.75, "x", fontsize=14, color=INK, ha="center", va="center")
     _cells(ax, 0.545, 0.86, 3, 3, w=0.095, h=0.075, header=GREY)
     ax.text(0.5, 0.36, "A @ B", ha="center", fontsize=11, family=MONO, color=BLUE)
-#     ax.text(0.5, 0.17, "blocking, threads, vector units,\nfifty years of Fortran",
-#             ha="center", fontsize=10, color=GREY)
+    #     ax.text(0.5, 0.17, "blocking, threads, vector units,\nfifty years of Fortran",
+    #             ha="center", fontsize=10, color=GREY)
 
-    fig.text(0.5, 0.025, "Most project need these.", ha="center", fontsize=11.5, color=INK)
+    fig.text(
+        0.5, 0.025, "Most project need these.", ha="center", fontsize=11.5, color=INK
+    )
     fig.tight_layout(rect=(0, 0.07, 1, 1))
     save(fig, out, "common_tasks")
+
 
 # ======================================================= 1. what you do not write
 def fig_library_value(out: Path) -> None:
@@ -188,33 +273,83 @@ def fig_library_value(out: Path) -> None:
     ax = axes[0]
     blank(ax)
     ax.set_title("Writing everything yourself", color=RED, fontsize=14)
-    ax.add_patch(FancyBboxPatch((0.06, 0.26), 0.88, 0.58,
-                                boxstyle="round,pad=0.01,rounding_size=0.02",
-                                facecolor="#fbfbfb", edgecolor=GREY, linewidth=1.4))
+    ax.add_patch(
+        FancyBboxPatch(
+            (0.06, 0.26),
+            0.88,
+            0.58,
+            boxstyle="round,pad=0.01,rounding_size=0.02",
+            facecolor="#fbfbfb",
+            edgecolor=GREY,
+            linewidth=1.4,
+        )
+    )
     rng_widths = [0.62, 0.74, 0.45, 0.80, 0.55, 0.70, 0.38, 0.66, 0.50, 0.72]
     for i, w in enumerate(rng_widths):
         y = 0.79 - i * 0.052
-        ax.plot([0.11, 0.11 + w * 0.78], [y, y], color=FAINT, lw=4,
-                solid_capstyle="round")
-    ax.text(0.5, 0.17, "Needs to handle quoting, encodings, missing values, dates, ...",
-            ha="center", fontsize=10.5, color=GREY)
-    ax.text(0.5, 0.06, "many lines, possible bugs", ha="center",
-            fontsize=12, color=RED, style="italic")
+        ax.plot(
+            [0.11, 0.11 + w * 0.78], [y, y], color=FAINT, lw=4, solid_capstyle="round"
+        )
+    ax.text(
+        0.5,
+        0.17,
+        "Needs to handle quoting, encodings, missing values, dates, ...",
+        ha="center",
+        fontsize=10.5,
+        color=GREY,
+    )
+    ax.text(
+        0.5,
+        0.06,
+        "many lines, possible bugs",
+        ha="center",
+        fontsize=12,
+        color=RED,
+        style="italic",
+    )
 
     ax = axes[1]
     blank(ax)
     ax.set_title("Importing a library", color=GREEN, fontsize=14)
-    ax.add_patch(FancyBboxPatch((0.06, 0.26), 0.88, 0.58,
-                                boxstyle="round,pad=0.01,rounding_size=0.02",
-                                facecolor="#fbfbfb", edgecolor=GREY, linewidth=1.4))
-    for i, line in enumerate(["import pandas as pd", "",
-                              'df = pd.read_csv("patients.csv")']):
-        ax.text(0.11, 0.72 - i * 0.12, line, fontsize=13, family=MONO,
-                color=(INK if line else GREY))
-    ax.text(0.5, 0.17, "Edge cases are already found and fixed",
-            ha="center", fontsize=10.5, color=GREY)
-    ax.text(0.5, 0.06, "2 lines, bugs already fixed", ha="center",
-            fontsize=12, color=GREEN, style="italic")
+    ax.add_patch(
+        FancyBboxPatch(
+            (0.06, 0.26),
+            0.88,
+            0.58,
+            boxstyle="round,pad=0.01,rounding_size=0.02",
+            facecolor="#fbfbfb",
+            edgecolor=GREY,
+            linewidth=1.4,
+        )
+    )
+    for i, line in enumerate(
+        ["import pandas as pd", "", 'df = pd.read_csv("patients.csv")']
+    ):
+        ax.text(
+            0.11,
+            0.72 - i * 0.12,
+            line,
+            fontsize=13,
+            family=MONO,
+            color=(INK if line else GREY),
+        )
+    ax.text(
+        0.5,
+        0.17,
+        "Edge cases are already found and fixed",
+        ha="center",
+        fontsize=10.5,
+        color=GREY,
+    )
+    ax.text(
+        0.5,
+        0.06,
+        "2 lines, bugs already fixed",
+        ha="center",
+        fontsize=12,
+        color=GREEN,
+        style="italic",
+    )
 
     fig.tight_layout()
     save(fig, out, "library_value")
@@ -239,8 +374,15 @@ def fig_ecosystem(out: Path) -> None:
         ax.text(0.72, y, what, fontsize=10, color=GREY, va="center", ha="left")
     for y in (0.78, 0.58, 0.38):
         arrow(ax, (0.36, y + 0.032), (0.36, y - 0.032), color=GREY, lw=1.4)
-    ax.text(0.02, 0.07, "you do not get to be better at matrix multiplication\n"
-            "than fifty years of Fortran", fontsize=10.5, color=INK, ha="left")
+    ax.text(
+        0.02,
+        0.07,
+        "you do not get to be better at matrix multiplication\n"
+        "than fifty years of Fortran",
+        fontsize=10.5,
+        color=INK,
+        ha="left",
+    )
 
     ax = axes[1]
     blank(ax)
@@ -259,8 +401,14 @@ def fig_ecosystem(out: Path) -> None:
         ax.text(0.98, y, what, fontsize=11, color=GREY, va="center", ha="right")
         if i:
             ax.plot([0.0, 1.0], [y + 0.072, y + 0.072], color=FAINT, lw=0.8)
-    ax.text(0.5, 0.02, "none of this ships with Python", ha="center",
-            fontsize=11, color=AMBER)
+    ax.text(
+        0.5,
+        0.02,
+        "none of this ships with Python",
+        ha="center",
+        fontsize=11,
+        color=AMBER,
+    )
 
     fig.tight_layout()
     save(fig, out, "ecosystem")
@@ -269,31 +417,67 @@ def fig_ecosystem(out: Path) -> None:
 # ======================================================= 3. libraries move
 def fig_versions(out: Path) -> None:
     """A library is a moving target, and sometimes it moves out from under you."""
-    fig, axes = plt.subplots(2, 1, figsize=WIDE,
-                             gridspec_kw={"height_ratios": [1, 1.1]})
+    fig, axes = plt.subplots(
+        2, 1, figsize=WIDE, gridspec_kw={"height_ratios": [1, 1.1]}
+    )
 
     ax = axes[0]
     blank(ax)
-    marks = [("1.3", 0.08, 2021, GREY), ("1.5", 0.30, 2022, GREY),
-             ("2.0", 0.56, 2023, RED), ("2.2", 0.80, 2024, GREY)]
+    marks = [
+        ("1.3", 0.08, 2021, GREY),
+        ("1.5", 0.30, 2022, GREY),
+        ("2.0", 0.56, 2023, RED),
+        ("2.2", 0.80, 2024, GREY),
+    ]
     ax.plot([0.04, 0.96], [0.52, 0.52], color=GREY, lw=2)
     for name, x, year, colour in marks:
         ax.plot([x], [0.52], "o", color=colour, ms=13, zorder=3)
         ax.text(x, 0.74, name, ha="center", fontsize=13, family=MONO, color=colour)
         ax.text(x, 0.30, str(year), ha="center", fontsize=10, color=GREY)
-    ax.annotate("", (0.56, 0.08), (0.56, 0.20),
-                arrowprops=dict(arrowstyle="-|>", color=RED, lw=1.6))
-    ax.text(0.40, 0.0, "2.0 removed DataFrame.append()", fontsize=11.5, color=RED,
-            ha="left", va="center")
+    ax.annotate(
+        "",
+        (0.56, 0.08),
+        (0.56, 0.20),
+        arrowprops=dict(arrowstyle="-|>", color=RED, lw=1.6),
+    )
+    ax.text(
+        0.40,
+        0.0,
+        "2.0 removed DataFrame.append()",
+        fontsize=11.5,
+        color=RED,
+        ha="left",
+        va="center",
+    )
 
     ax = axes[1]
     blank(ax)
-    ax.text(0.02, 0.84, "code that worked for three years:", fontsize=11,
-            color=GREY, ha="left")
-    ax.text(0.02, 0.62, "cohort = cohort.append(new_rows)", fontsize=14,
-            family=MONO, color=INK, ha="left")
-    ax.text(0.02, 0.34, "AttributeError: 'DataFrame' object has no attribute 'append'",
-            fontsize=13, family=MONO, color=RED, ha="left")
+    ax.text(
+        0.02,
+        0.84,
+        "code that worked for three years:",
+        fontsize=11,
+        color=GREY,
+        ha="left",
+    )
+    ax.text(
+        0.02,
+        0.62,
+        "cohort = cohort.append(new_rows)",
+        fontsize=14,
+        family=MONO,
+        color=INK,
+        ha="left",
+    )
+    ax.text(
+        0.02,
+        0.34,
+        "AttributeError: 'DataFrame' object has no attribute 'append'",
+        fontsize=13,
+        family=MONO,
+        color=RED,
+        ha="left",
+    )
 
     fig.tight_layout()
     save(fig, out, "versions")
@@ -306,18 +490,33 @@ def fig_conflict(out: Path) -> None:
     blank(ax)
 
     box(ax, (0.20, 0.82), 0.34, 0.20, "the 2022 cohort study", ec=GREY, fs=11)
-    ax.text(0.20, 0.645, "written against pandas 1.5", ha="center", fontsize=10.5,
-            color=INK)
+    ax.text(
+        0.20, 0.645, "written against pandas 1.5", ha="center", fontsize=10.5, color=INK
+    )
     box(ax, (0.68, 0.82), 0.34, 0.20, "this year's imaging pipeline", ec=GREY, fs=11)
     ax.text(0.68, 0.645, "needs pandas 2.2", ha="center", fontsize=10.5, color=INK)
 
     arrow(ax, (0.20, 0.58), (0.40, 0.42), color=RED)
     arrow(ax, (0.68, 0.58), (0.48, 0.42), color=RED)
     box(ax, (0.44, 0.30), 0.44, 0.20, "one system python", ec=RED, fs=12)
-    ax.text(0.44, 0.13, "pip install pandas==2.2", ha="center", fontsize=12,
-            family=MONO, color=INK)
-    ax.text(0.44, 0.03, "the 2022 cohort study stops running", ha="center",
-            fontsize=11.5, color=RED, style="italic")
+    ax.text(
+        0.44,
+        0.13,
+        "pip install pandas==2.2",
+        ha="center",
+        fontsize=12,
+        family=MONO,
+        color=INK,
+    )
+    ax.text(
+        0.44,
+        0.03,
+        "the 2022 cohort study stops running",
+        ha="center",
+        fontsize=11.5,
+        color=RED,
+        style="italic",
+    )
     save(fig, out, "conflict")
 
 
@@ -341,34 +540,73 @@ def fig_venv_anatomy(out: Path) -> None:
     for name, x, y, colour in tree:
         ax.text(x, y, name, fontsize=12, family=MONO, color=colour, va="center")
     # elbow connectors, so the indentation reads as a tree rather than a list
-    for (px, py), (cx, cy) in (((0.04, 0.88), (0.10, 0.74)),
-                               ((0.10, 0.74), (0.17, 0.60)),
-                               ((0.10, 0.74), (0.17, 0.22)),
-                               ((0.17, 0.60), (0.24, 0.47)),
-                               ((0.17, 0.60), (0.24, 0.35)),
-                               ((0.17, 0.22), (0.24, 0.09))):
+    for (px, py), (cx, cy) in (
+        ((0.04, 0.88), (0.10, 0.74)),
+        ((0.10, 0.74), (0.17, 0.60)),
+        ((0.10, 0.74), (0.17, 0.22)),
+        ((0.17, 0.60), (0.24, 0.47)),
+        ((0.17, 0.60), (0.24, 0.35)),
+        ((0.17, 0.22), (0.24, 0.09)),
+    ):
         stem = px + 0.016
         ax.plot([stem, stem], [py - 0.035, cy], color=FAINT, lw=1.6)
         ax.plot([stem, cx - 0.008], [cy, cy], color=FAINT, lw=1.6)
-    ax.text(0.98, 0.74, "its own interpreter\nand its own packages",
-            fontsize=10.5, color=GREEN, ha="right", va="center")
+    ax.text(
+        0.98,
+        0.74,
+        "its own interpreter\nand its own packages",
+        fontsize=10.5,
+        color=GREEN,
+        ha="right",
+        va="center",
+    )
 
     ax = axes[1]
     blank(ax)
     ax.set_title("Activating it edits one variable", fontsize=13)
     ax.text(0.02, 0.84, "before", fontsize=11, color=GREY, ha="left")
-    ax.text(0.02, 0.70, "PATH=/usr/bin:/bin", fontsize=12, family=MONO, color=INK,
-            ha="left")
-    ax.text(0.02, 0.56, "which python3   ->  /usr/bin/python3", fontsize=11.5,
-            family=MONO, color=GREY, ha="left")
+    ax.text(
+        0.02, 0.70, "PATH=/usr/bin:/bin", fontsize=12, family=MONO, color=INK, ha="left"
+    )
+    ax.text(
+        0.02,
+        0.56,
+        "which python3   ->  /usr/bin/python3",
+        fontsize=11.5,
+        family=MONO,
+        color=GREY,
+        ha="left",
+    )
     arrow(ax, (0.12, 0.47), (0.12, 0.40), color=GREEN)
-    ax.text(0.17, 0.435, "source .venv/bin/activate", fontsize=11, family=MONO,
-            color=GREEN, va="center", ha="left")
+    ax.text(
+        0.17,
+        0.435,
+        "source .venv/bin/activate",
+        fontsize=11,
+        family=MONO,
+        color=GREEN,
+        va="center",
+        ha="left",
+    )
     ax.text(0.02, 0.29, "after", fontsize=11, color=GREY, ha="left")
-    ax.text(0.02, 0.17, "PATH=project/.venv/bin:/usr/bin:/bin", fontsize=12,
-            family=MONO, color=GREEN, ha="left")
-    ax.text(0.02, 0.04, "which python3   ->  project/.venv/bin/python3",
-            fontsize=11.5, family=MONO, color=GREEN, ha="left")
+    ax.text(
+        0.02,
+        0.17,
+        "PATH=project/.venv/bin:/usr/bin:/bin",
+        fontsize=12,
+        family=MONO,
+        color=GREEN,
+        ha="left",
+    )
+    ax.text(
+        0.02,
+        0.04,
+        "which python3   ->  project/.venv/bin/python3",
+        fontsize=11.5,
+        family=MONO,
+        color=GREEN,
+        ha="left",
+    )
 
     fig.tight_layout()
     save(fig, out, "venv_anatomy")
@@ -380,8 +618,16 @@ def fig_pip_flow(out: Path) -> None:
     fig, ax = plt.subplots(figsize=WIDE)
     blank(ax)
 
-    ax.text(0.02, 0.92, "pip install pandas", fontsize=16, family=MONO, color=INK,
-            ha="left", va="center")
+    ax.text(
+        0.02,
+        0.92,
+        "pip install pandas",
+        fontsize=16,
+        family=MONO,
+        color=INK,
+        ha="left",
+        va="center",
+    )
 
     stages = [
         ("PyPI", 0.10, "the public index,\n600 000 packages"),
@@ -395,10 +641,22 @@ def fig_pip_flow(out: Path) -> None:
     for x0, x1 in zip([s[1] for s in stages], [s[1] for s in stages][1:]):
         arrow(ax, (x0 + 0.095, 0.55), (x1 - 0.095, 0.55), color=BLUE)
 
-    ax.text(0.02, 0.14, "It installs into whichever environment is active right now.",
-            fontsize=12, color=INK, ha="left")
-    ax.text(0.02, 0.04, "That is the whole job. Nothing else about pip is a feature.",
-            fontsize=11.5, color=GREY, ha="left")
+    ax.text(
+        0.02,
+        0.14,
+        "It installs into whichever environment is active right now.",
+        fontsize=12,
+        color=INK,
+        ha="left",
+    )
+    ax.text(
+        0.02,
+        0.04,
+        "That is the whole job. Nothing else about pip is a feature.",
+        fontsize=11.5,
+        color=GREY,
+        ha="left",
+    )
     save(fig, out, "pip_flow")
 
 
@@ -410,10 +668,12 @@ def fig_uv_tools(out: Path) -> None:
     ax = axes[0]
     blank(ax)
     ax.set_title("Classic setup", fontsize=13)
-    items = [("pyenv", "install Python itself"),
-             ("venv", "create an environment"),
-             ("pip", "install packages"),
-             ("pipx", "install command line tools")]
+    items = [
+        ("pyenv", "install Python itself"),
+        ("venv", "create an environment"),
+        ("pip", "install packages"),
+        ("pipx", "install command line tools"),
+    ]
     for i, (name, what) in enumerate(items):
         y = 0.84 - i * 0.165
         box(ax, (0.21, y), 0.30, 0.125, name, ec=GREY, fs=11.5, mono=True)
@@ -424,11 +684,13 @@ def fig_uv_tools(out: Path) -> None:
     blank(ax)
     ax.set_title("With uv", fontsize=13, color=GREEN)
     box(ax, (0.5, 0.88), 0.40, 0.14, "uv", ec=GREEN, fs=20, mono=True)
-    cmds = [("uv python install 3.12", "the interpreter"),
-            ("uv venv", "the environment"),
-            ("uv pip install pandas", "the packages"),
-            ("uv lock  /  uv sync", "the lock file"),
-            ("uvx ruff check .", "a tool, run once")]
+    cmds = [
+        ("uv python install 3.12", "the interpreter"),
+        ("uv venv", "the environment"),
+        ("uv pip install pandas", "the packages"),
+        ("uv lock  /  uv sync", "the lock file"),
+        ("uvx ruff check .", "a tool, run once"),
+    ]
     for i, (cmd, what) in enumerate(cmds):
         y = 0.67 - i * 0.125
         ax.text(0.0, y, cmd, fontsize=11, family=MONO, color=INK, va="center")
@@ -442,8 +704,8 @@ def fig_uv_tools(out: Path) -> None:
 # ======================================================= 8. why uv is good
 def fig_uv_why(out: Path) -> None:
     """Speed is the headline; the lock file is the part that matters for science."""
-#     fig, axes = plt.subplots(1, 2, figsize=WIDE, gridspec_kw={"width_ratios": [1, 1.15]})
-#     ax = axes[0]
+    #     fig, axes = plt.subplots(1, 2, figsize=WIDE, gridspec_kw={"width_ratios": [1, 1.15]})
+    #     ax = axes[0]
     fig, axes = plt.subplots(1, 1, figsize=WIDE)
 
     ax = axes
@@ -462,22 +724,22 @@ def fig_uv_why(out: Path) -> None:
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
 
-#     ax = axes[1]
-#     blank(ax)
-#     ax.set_title("Will it install the same thing next year?", fontsize=13)
-#     rows = [
-#         ("pandas", RED, "whatever is newest the day you run it"),
-#         ("pandas==2.2.1", AMBER, "pinned, but its dependencies are not"),
-#         ("uv.lock", GREEN, "every package, every version, every hash"),
-#     ]
-#     for i, (what, colour, note) in enumerate(rows):
-#         y = 0.76 - i * 0.26
-#         box(ax, (0.26, y), 0.46, 0.16, what, ec=colour, fs=12, mono=True)
-#         ax.text(0.53, y, note, fontsize=10.5, color=colour, va="center", ha="left")
-#     ax.text(0.02, 0.06, "A result nobody can reinstall is a result nobody can check.",
-#             fontsize=11.5, color=INK, ha="left")
+    #     ax = axes[1]
+    #     blank(ax)
+    #     ax.set_title("Will it install the same thing next year?", fontsize=13)
+    #     rows = [
+    #         ("pandas", RED, "whatever is newest the day you run it"),
+    #         ("pandas==2.2.1", AMBER, "pinned, but its dependencies are not"),
+    #         ("uv.lock", GREEN, "every package, every version, every hash"),
+    #     ]
+    #     for i, (what, colour, note) in enumerate(rows):
+    #         y = 0.76 - i * 0.26
+    #         box(ax, (0.26, y), 0.46, 0.16, what, ec=colour, fs=12, mono=True)
+    #         ax.text(0.53, y, note, fontsize=10.5, color=colour, va="center", ha="left")
+    #     ax.text(0.02, 0.06, "A result nobody can reinstall is a result nobody can check.",
+    #             fontsize=11.5, color=INK, ha="left")
 
-#     fig.tight_layout()
+    #     fig.tight_layout()
     save(fig, out, "uv_why")
 
 

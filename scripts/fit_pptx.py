@@ -61,10 +61,15 @@ def fit(pptx: Path) -> tuple[int, int]:
     boxes = quotes = 0
     tmp = pptx.with_suffix(".pptx.tmp")
 
-    with zipfile.ZipFile(pptx) as src, zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as dst:
+    with (
+        zipfile.ZipFile(pptx) as src,
+        zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as dst,
+    ):
         for item in src.infolist():
             data = src.read(item.filename)
-            if item.filename.startswith("ppt/slides/slide") and item.filename.endswith(".xml"):
+            if item.filename.startswith("ppt/slides/slide") and item.filename.endswith(
+                ".xml"
+            ):
                 text, b, q = patch(data.decode("utf-8"))
                 boxes += b
                 quotes += q
@@ -81,8 +86,10 @@ def main() -> None:
     for arg in sys.argv[1:]:
         path = Path(arg)
         boxes, quotes = fit(path)
-        print(f"{path}: autofit enabled on {boxes} text boxes, "
-              f"{quotes} question slides centred")
+        print(
+            f"{path}: autofit enabled on {boxes} text boxes, "
+            f"{quotes} question slides centred"
+        )
 
 
 if __name__ == "__main__":

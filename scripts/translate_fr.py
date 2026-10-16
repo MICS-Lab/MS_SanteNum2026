@@ -207,12 +207,17 @@ def _post(url: str, data: bytes, headers: dict[str, str]) -> dict:
             with urllib.request.urlopen(request, timeout=120) as response:
                 return json.loads(response.read())
         except urllib.error.HTTPError as error:
-            if error.code not in (408, 429, 500, 502, 503, 529) or attempt == ATTEMPTS - 1:
-                raise RuntimeError(f"{error.code} {error.read()[:400].decode()}") from error
+            if (
+                error.code not in (408, 429, 500, 502, 503, 529)
+                or attempt == ATTEMPTS - 1
+            ):
+                raise RuntimeError(
+                    f"{error.code} {error.read()[:400].decode()}"
+                ) from error
         except urllib.error.URLError as error:
             if attempt == ATTEMPTS - 1:
                 raise RuntimeError(str(error)) from error
-        time.sleep(2 ** attempt)
+        time.sleep(2**attempt)
     raise RuntimeError("unreachable")
 
 
@@ -351,7 +356,7 @@ def map_front_matter(front: str, convert) -> tuple[str, int, int]:
         return french
 
     for line in front.split("\n"):
-        field = re.match(r'^(\w+):\s*(.*)$', line)
+        field = re.match(r"^(\w+):\s*(.*)$", line)
         if field:
             name, value = field.group(1), field.group(2)
             in_title = name == "title" and value.strip() == "|"
@@ -374,7 +379,7 @@ def map_deck(path: Path, convert) -> tuple[str, int, int]:
     """Rewrite a slides.md: the front matter, then one unit per `##` slide."""
     text = path.read_text(encoding="utf-8")
     head = FRONT.match(text)
-    body = text[head.end():] if head else text
+    body = text[head.end() :] if head else text
     done = missing = 0
 
     if head:
@@ -396,7 +401,7 @@ def map_deck(path: Path, convert) -> tuple[str, int, int]:
             continue
         done += 1
         lead = block[: len(block) - len(block.lstrip("\n"))]
-        trail = block[len(block.rstrip("\n")):]
+        trail = block[len(block.rstrip("\n")) :]
         out.append(lead + french + trail)
     return "".join(out), done, missing
 
@@ -410,7 +415,9 @@ def sources(selection: list[str]) -> list[Path]:
         if not p.stem.endswith(SUFFIX)
     ]
     if selection:
-        found = [p for p in found if any(s in str(p.relative_to(ROOT)) for s in selection)]
+        found = [
+            p for p in found if any(s in str(p.relative_to(ROOT)) for s in selection)
+        ]
     return found
 
 
@@ -486,7 +493,9 @@ def fill_memory(wanted: dict[str, str], memory: dict[str, dict], args) -> int:
         for i, (k, entry) in enumerate(pool.map(one, todo), start=1):
             memory[k] = entry
             flag = "" if entry["status"] == "machine" else "  <- check by hand"
-            first = entry["fr"].strip().splitlines()[0][:60] if entry["fr"].strip() else ""
+            first = (
+                entry["fr"].strip().splitlines()[0][:60] if entry["fr"].strip() else ""
+            )
             print(f"  [{i}/{len(todo)}] {k} {first}{flag}")
     return len(todo)
 
@@ -518,8 +527,10 @@ def main() -> None:
         check = [k for k in wanted if memory.get(k, {}).get("status") == "check"]
         human = sum(1 for k in wanted if memory.get(k, {}).get("status") == "human")
         decks = sum(1 for p in paths if p.suffix == ".md")
-        print(f"{len(paths) - decks} notebooks and {decks} decks, "
-              f"{len(wanted)} distinct strings")
+        print(
+            f"{len(paths) - decks} notebooks and {decks} decks, "
+            f"{len(wanted)} distinct strings"
+        )
         print(f"  translated   {have}/{len(wanted)}")
         print(f"  read by hand {human}")
         print(f"  to check     {len(check)}")
@@ -537,11 +548,15 @@ def main() -> None:
     for path in paths:
         out, done, missing = write_french(path, memory)
         total_missing += missing
-        where = out.relative_to(ROOT) if out else f"{path.relative_to(ROOT)} (not written)"
+        where = (
+            out.relative_to(ROOT) if out else f"{path.relative_to(ROOT)} (not written)"
+        )
         print(f"{where}  {done} in French, {missing} still English")
     if total_missing:
-        print(f"\n{total_missing} strings are still English: run again with an engine",
-              file=sys.stderr)
+        print(
+            f"\n{total_missing} strings are still English: run again with an engine",
+            file=sys.stderr,
+        )
 
 
 if __name__ == "__main__":

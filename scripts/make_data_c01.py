@@ -45,7 +45,9 @@ def ecg_file(rng: Random, patient: str, minutes: int = 2) -> list[str]:
     rows = ["t_s;lead_II_mV"]
     hr = rng.uniform(52, 118)
     for k in range(minutes * 60):
-        rows.append(f"{k}.0;{rng.gauss(0, 0.12) + (0.9 if k % max(1, int(60 / (hr / 60))) == 0 else 0):.3f}")
+        rows.append(
+            f"{k}.0;{rng.gauss(0, 0.12) + (0.9 if k % max(1, int(60 / (hr / 60))) == 0 else 0):.3f}"
+        )
     return rows
 
 
@@ -80,11 +82,15 @@ def build(out: Path) -> None:
     log = ["2024-03-01 08:00:12 INFO  export started"]
     for pid in ids[:40]:
         if rng.random() < 0.12:
-            log.append(f"2024-03-01 08:0{rng.randint(0, 9)}:{rng.randint(10, 59)} "
-                       f"ERROR could not read trace for {pid}")
+            log.append(
+                f"2024-03-01 08:0{rng.randint(0, 9)}:{rng.randint(10, 59)} "
+                f"ERROR could not read trace for {pid}"
+            )
         else:
-            log.append(f"2024-03-01 08:0{rng.randint(0, 9)}:{rng.randint(10, 59)} "
-                       f"INFO  wrote ecg/{pid}.csv")
+            log.append(
+                f"2024-03-01 08:0{rng.randint(0, 9)}:{rng.randint(10, 59)} "
+                f"INFO  wrote ecg/{pid}.csv"
+            )
     log.append("2024-03-01 08:12:44 INFO  export finished")
     (out / "export.log").write_text("\n".join(log) + "\n")
 
