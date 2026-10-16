@@ -7,7 +7,7 @@ author: "Paul Dubois"
 date: "Semaine 1, cours"
 ---
 
-## Le tableau avant le graphique
+## Données
 
 ![](img/dataframe.png)
 

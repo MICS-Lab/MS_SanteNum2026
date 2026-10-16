@@ -7,7 +7,7 @@ author: "Paul Dubois"
 date: "Week 1, Lecture"
 ---
 
-## The table before the plot
+## Data
 
 ![](img/dataframe.png)
 
